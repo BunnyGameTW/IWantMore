@@ -308,25 +308,26 @@ public class GameManager : MonoBehaviour
                 break;
             }                
         }
-        
 
-        if (scene.name == DEFAULT_SCENE)
-        {            
-            SceneManager.LoadScene(SCENE_NAME_LOGIN, LoadSceneMode.Additive);
-        }
-        else
-        {
-            bool b = true;
-            //SetStateStart(EGameState.READY);
-            //SetState(EGameState.READY);
-            //gameObjectRoots[EGameState.TITLE].SetActive(!b);
-            //gameObjectRoots[EGameState.GAME].SetActive(b);
 
-            SetState(EGameState.TITLE);
-            gameObjectRoots[EGameState.TITLE].SetActive(b);
-            gameObjectRoots[EGameState.GAME].SetActive(!b);
-        }
+        //if (scene.name == DEFAULT_SCENE)
+        //{            
+        //    SceneManager.LoadScene(SCENE_NAME_LOGIN, LoadSceneMode.Additive);
+        //}
+        //else
+        //{
+        //    
+        //    //SetStateStart(EGameState.READY);
+        //    //SetState(EGameState.READY);
+        //    //gameObjectRoots[EGameState.TITLE].SetActive(!b);
+        //    //gameObjectRoots[EGameState.GAME].SetActive(b);
 
+
+        //}
+        bool b = true;
+        SetState(EGameState.TITLE);
+        gameObjectRoots[EGameState.TITLE].SetActive(b);
+        gameObjectRoots[EGameState.GAME].SetActive(!b);
     }
     public void PlayerHurt()
     {
