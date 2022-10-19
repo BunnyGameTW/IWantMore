@@ -7,7 +7,8 @@ public enum EGameState
     TITLE = 1,
     READY = 2,
     GAME = 3,
-    END = 4
+    END = 4,
+    SCORE = 5,
 }
 
 public class GameManager : MonoBehaviour
@@ -29,21 +30,20 @@ public class GameManager : MonoBehaviour
     const int MAX_SCORE = 99999;
 
     const int INITIAL_ENEMY_COUNT = 20;
-    const int EXPAND_POOL_COUNT = 5;
+    const int EXPAND_POOL_COUNT = 10;
+    const int INITIAL_PARTICLE_COUNT = 10;
 
     const int COUNT_DOWN_TIME = 4;
 
     const float SPAWN_TIME = 3.0f;
     const float SPAWN_TIME_DECREASE_RATIO = 0.8f;
 
-    const string SCENE_NAME_LOGIN = "Login";
-    const string SCENE_NAME_GAME = "Game";
-    const string DEFAULT_SCENE = SCENE_NAME_GAME;
-
     const string SPAWN_POSITION_NAME = "spawnPos";
     const string SPAWN_ROOT_NAME = "enemyRoot";
 
     const string TRANISITION_NAME = "GameTransition";
+    const float SLOW_MOTION_TIME = 1.0f;
+    const float SLOW_MOTION_TIME_SCALE = 0.1f;
 
     Vector2 POOL_IDLE_POSITION = new Vector2(15, 0);
     int[] fatScoreArray = {
@@ -67,18 +67,21 @@ public class GameManager : MonoBehaviour
     public Enemy[] enemies;
     public Animation transitionAni;
     public GameObject dieParticle;
+    public GameObject[] roots;
     public int difficulty { get; set; }
     public float maxDistance { get; set; }
 
     EGameState state, nextState;
     Player player;
-    float comboTimer, spawnTimer, spawnTime;
+    float comboTimer, spawnTimer, spawnTime, endTimer;
     int score, comboCounter;
+   
     Dictionary<EEnemyKind, List<Enemy>> enemyPool, enemyInUsePool;
     List<Enemy> enemyList;
     Vector3[] spawnPositions;
     int countDownCounter;
     Transform spawnRoot;
+
     Dictionary<EGameState, GameObject> gameObjectRoots;
     List<GameObject> particlePool, particleInUsePool;
     #region life cycle
@@ -113,17 +116,6 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-            SetState(EGameState.READY);
-        else if (Input.GetKeyDown(KeyCode.S))
-        {
-            SpawnEnemy(2);
-        }
-        else if (Input.GetKeyDown(KeyCode.T))
-        {
-            SetState(EGameState.TITLE);
-        }
-
         //spawn enemy
         if (state == EGameState.GAME)
         {
@@ -144,6 +136,21 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+        else if (state == EGameState.END)
+        {
+            if (endTimer > 0)
+            {
+                endTimer -= Time.unscaledDeltaTime;
+                if (endTimer <= 0)
+                {
+                    ChangeState(EGameState.SCORE);
+                    endTimer = 0;
+                    Time.timeScale = 1.0f;
+                }
+            }
+
+        }
+
     }
     #endregion
    
@@ -247,6 +254,9 @@ public class GameManager : MonoBehaviour
                 break;
             case EGameState.END:
                 break;
+            case EGameState.SCORE:
+                EndUIController.Instance.SetScore(score);//TODO high score & secret page
+                break;
         }
     }
 
@@ -254,7 +264,7 @@ public class GameManager : MonoBehaviour
     {
         state = _state;
 
-        GameUIController.Instance.SetState(_state);
+        //GameUIController.Instance.SetState(_state);
         switch (state)
         {
             case EGameState.TITLE:
@@ -266,6 +276,8 @@ public class GameManager : MonoBehaviour
                 player.SetState(EPlayerState.NORMAL);
                 break;
             case EGameState.END:
+                Time.timeScale = SLOW_MOTION_TIME_SCALE;
+                endTimer = SLOW_MOTION_TIME;
                 player.SetEnd();
 
                 //in use enemy stop moving
@@ -277,8 +289,9 @@ public class GameManager : MonoBehaviour
                     }
 
                 }
+                break;
+            case EGameState.SCORE:
 
-                Debug.Log("game end->" + score);
                 break;
         }
     }
@@ -287,47 +300,19 @@ public class GameManager : MonoBehaviour
     #region event
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("OnSceneLoaded: " + scene.name);       
+        Debug.Log("OnSceneLoaded: " + scene.name);
 
-        GameObject [] gos = scene.GetRootGameObjects();
-        for (int i = 0; i < gos.Length; i++)
-        {
-            if (gos[i].name == "GameObjectRoot")
-            {
-                if (scene.name == SCENE_NAME_GAME)
-                {
-                    gameObjectRoots.Add(EGameState.READY, gos[i]);//TODO
-                    gameObjectRoots.Add(EGameState.GAME, gos[i]);
-                    gameObjectRoots.Add(EGameState.END, gos[i]);
-                }
-                else
-                {
-                    gameObjectRoots.Add(EGameState.TITLE, gos[i]);
-                }
-                
-                break;
-            }                
-        }
+        gameObjectRoots.Add(EGameState.TITLE, roots[0]);
+        gameObjectRoots.Add(EGameState.READY, roots[1]);
+        gameObjectRoots.Add(EGameState.GAME, roots[1]);
+        gameObjectRoots.Add(EGameState.END, roots[1]);
+        gameObjectRoots.Add(EGameState.SCORE, roots[2]);
 
-
-        //if (scene.name == DEFAULT_SCENE)
-        //{            
-        //    SceneManager.LoadScene(SCENE_NAME_LOGIN, LoadSceneMode.Additive);
-        //}
-        //else
-        //{
-        //    
-        //    //SetStateStart(EGameState.READY);
-        //    //SetState(EGameState.READY);
-        //    //gameObjectRoots[EGameState.TITLE].SetActive(!b);
-        //    //gameObjectRoots[EGameState.GAME].SetActive(b);
-
-
-        //}
-        bool b = true;
-        SetState(EGameState.TITLE);
-        gameObjectRoots[EGameState.TITLE].SetActive(b);
-        gameObjectRoots[EGameState.GAME].SetActive(!b);
+        EGameState e = EGameState.TITLE;
+        SetState(e);        
+        gameObjectRoots[EGameState.TITLE].SetActive(EGameState.TITLE == e);
+        gameObjectRoots[EGameState.GAME].SetActive(EGameState.GAME == e);
+        gameObjectRoots[EGameState.SCORE].SetActive(EGameState.SCORE == e);
     }
     public void PlayerHurt()
     {
@@ -336,7 +321,6 @@ public class GameManager : MonoBehaviour
     public void OnPlayerDie()
     {
         SetState(EGameState.END);
-
     }
     public void OnEnemyDie(int _score)
     {
@@ -440,6 +424,7 @@ public class GameManager : MonoBehaviour
         spawnTime = SPAWN_TIME;
         spawnTimer = 0;
         countDownCounter = COUNT_DOWN_TIME;
+        endTimer = 0;
         for (int i = 0; i < enemies.Length; i++)
         {
             int count = enemyInUsePool[enemies[i].kind].Count;
@@ -466,9 +451,9 @@ public class GameManager : MonoBehaviour
             enemyPool.Add(enemies[i].kind, enemyList);
         }
 
-        particlePool = new List<GameObject>(INITIAL_ENEMY_COUNT);
-        particleInUsePool = new List<GameObject>(INITIAL_ENEMY_COUNT);
-        for (int j = 0; j < INITIAL_ENEMY_COUNT; j++)
+        particlePool = new List<GameObject>(INITIAL_PARTICLE_COUNT);
+        particleInUsePool = new List<GameObject>(INITIAL_PARTICLE_COUNT);
+        for (int j = 0; j < INITIAL_PARTICLE_COUNT; j++)
         {
             GameObject e = Instantiate(dieParticle, POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);
             e.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;//TODO
@@ -493,7 +478,6 @@ public class GameManager : MonoBehaviour
 
     EEnemyKind GetRandomEnemyKind(int _difficulty)
     {
-       // return EEnemyKind.SPAWN;
         int randomValue = Random.Range(1, 101);
         int sum = 0;
         for (int i = 0; i < enemies.Length; i++)

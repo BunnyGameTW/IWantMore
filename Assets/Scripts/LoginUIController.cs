@@ -22,6 +22,7 @@ public class LoginUIController : MonoBehaviour
         switch (name)
         {
             case "Start":
+                AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON);
                 GameManager.Instance.ChangeState(EGameState.READY);
                 break;
         }
@@ -60,11 +61,12 @@ public class LoginUIController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON_NEXT);
         ani = GetComponent<Animation>();
         if (isFirstOpen)
         {
             isFirstOpen = false;
-            ani.Play(LOGIN_ANIMATION_NAME);//TODO ¼½§¹¤~¯à«ö?
+            ani.Play(LOGIN_ANIMATION_NAME);
         }
 
         Transform trans = gameObjectHighScore.transform.Find(NUMBER_ROOT_NAME);
@@ -81,9 +83,4 @@ public class LoginUIController : MonoBehaviour
         SetHighScore(0);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

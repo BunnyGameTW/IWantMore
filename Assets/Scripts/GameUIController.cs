@@ -8,7 +8,6 @@ public class GameUIController : MonoBehaviour
     const string COMBO_TEXT_IMAGE_NAME = "combo";
     const string COMBO_IMAGE_ROOT_NAME = "comboRoot";
     const string FEVER_TEXT_IMAGE_NAME = "fever";
-    const string APPEAR_NAME = "GameUIInOut";
 
     public GameObject hpRoot, scoreRoot, comboRoot, feverRoot;
     public Sprite hpSprite;
@@ -17,12 +16,9 @@ public class GameUIController : MonoBehaviour
     public Image countDownImage;
     public Sprite [] countDownNumberSprites;
 
-    public Button retryButton;
-    public Button homeButton;
     public Canvas canvas;
 
     GameObject[] gameObjectHps;
-    Animation anim;
     Image[] scoreImages, comboImages;
     Image comboTextImage, feverImage;
 
@@ -156,32 +152,18 @@ public class GameUIController : MonoBehaviour
         SetFever(false);        
     }
 
-    //TODO use animation replace active
-    //TODO prevState?
     public void SetState(EGameState state)
     {
         switch (state)
         {
             case EGameState.TITLE:
-                retryButton.gameObject.SetActive(false);
-                homeButton.gameObject.SetActive(false);
-                anim[APPEAR_NAME].speed = 1;
-                anim[APPEAR_NAME].time = 0;
-                anim.Play(APPEAR_NAME);
                 break;
             case EGameState.READY:
-                retryButton.gameObject.SetActive(false);
-                homeButton.gameObject.SetActive(false);
-                anim[APPEAR_NAME].speed = -1;
-                anim[APPEAR_NAME].time = anim[APPEAR_NAME].length;
-                anim.Play(APPEAR_NAME);
+
                 break;
             case EGameState.GAME:
                 break;
             case EGameState.END:
-                //TODO show end and play zoom in animation
-                retryButton.gameObject.SetActive(true);
-                homeButton.gameObject.SetActive(true);                
                 break;
         }
     }
@@ -190,8 +172,6 @@ public class GameUIController : MonoBehaviour
     {
         Debug.Log("game ui controller");
         instance = this;
-        anim = canvas.GetComponent<Animation>();
-
 
         scoreImages = new Image[scoreRoot.transform.childCount];
         int j = 0;
@@ -237,16 +217,5 @@ public class GameUIController : MonoBehaviour
         }
 
     }
-    public void ButtonEvent(string name)
-    {
-        switch (name)
-        {
-            case "Retry":
-                GameManager.Instance.ChangeState(EGameState.READY);
-                break;
-            case "Home":
-                GameManager.Instance.ChangeState(EGameState.TITLE);
-                break;
-        }       
-    }
+  
 }
