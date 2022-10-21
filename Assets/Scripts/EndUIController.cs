@@ -7,8 +7,10 @@ public class EndUIController : MonoBehaviour
     public Sprite[] numberSprites;
     public GameObject gameObjectNewRecord;
     public GameObject scoreRoot;
-
+    public GameObject gameObjectSecret;
     Image[] scoreImages;
+    Animation secretAni;
+    const string POP_IN_ANIMATION_NAME = "PopInOut";
 
     static EndUIController instance;
     public static EndUIController Instance
@@ -22,7 +24,7 @@ public class EndUIController : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        Debug.Log("en ui controller");
+        Debug.Log("end ui controller");
         instance = this;
         scoreImages = new Image[scoreRoot.transform.childCount];
         int j = 0;
@@ -31,12 +33,27 @@ public class EndUIController : MonoBehaviour
             scoreImages[j] = scoreRoot.transform.GetChild(i - 1).GetComponent<Image>();
             j++;
         }
+        gameObjectSecret.GetComponent<AnimationEventListener>().sender += AnimationEvent;
+        secretAni = gameObjectSecret.GetComponent<Animation>();
+        gameObjectSecret.SetActive(false);
     }
-    //TODO show letter & unlock title or crown?
+
+    void AnimationEvent(string name)
+    {
+        if ((name == "start") && (secretAni[POP_IN_ANIMATION_NAME].speed == -1))
+        {
+            gameObjectSecret.SetActive(false);
+        }
+    }
+
     public void SetUnlockSecret()
     {
-
+        gameObjectSecret.SetActive(true);
+        secretAni[POP_IN_ANIMATION_NAME].speed = 1;
+        secretAni[POP_IN_ANIMATION_NAME].time = 0;
+        secretAni.Play(POP_IN_ANIMATION_NAME);
     }
+
     public void SetScore(int score, bool showNewRecord = false)
     {
         for (int i = 0; i < scoreImages.Length; i++)
@@ -50,6 +67,8 @@ public class EndUIController : MonoBehaviour
     }
     public void ButtonEvent(string name)
     {
+        AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON);
+
         switch (name)
         {
             case "Retry":
@@ -60,6 +79,12 @@ public class EndUIController : MonoBehaviour
                 break;
             case "Upload":
                 //TODO show input field & upload to firebase & show leaderboard
+                break;
+            case "End":
+                secretAni[POP_IN_ANIMATION_NAME].speed = -1;
+                secretAni[POP_IN_ANIMATION_NAME].time = secretAni[POP_IN_ANIMATION_NAME].length;
+                secretAni.Play(POP_IN_ANIMATION_NAME);
+
                 break;
         }
     }

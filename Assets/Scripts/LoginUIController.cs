@@ -6,24 +6,45 @@ public class LoginUIController : MonoBehaviour
 {
     const string LOGIN_ANIMATION_NAME = "Login";
     const string NUMBER_ROOT_NAME = "numbers";
-
-    public Sprite fatAsa, plate;
-    public GameObject gameObjectHighScore, gameObjectCream;
+    const string POP_IN_ANIMATION_NAME = "PopInOut";
+    public Sprite fatAsa, plate, kingAsa;
+    public GameObject gameObjectHighScore, gameObjectCream, gameObjectSecret, buttonSecret;
     public SpriteRenderer spriteRendererCake, spriteRendererAsa;
     public Sprite[] numberSprites;
     public Transform platePosition;
 
-    Animation ani;
-    bool isFirstOpen = true;
+    Animation ani, secretAni;
     Image[] numberImages;
 
+    static LoginUIController instance;
+    public static LoginUIController Instance
+    {
+        get
+        {
+            //if (instance == null)
+            return instance;
+        }
+    }
+    
     public void ButtonEvent(string name)
     {
+        AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON);
+
         switch (name)
         {
             case "Start":
-                AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON);
                 GameManager.Instance.ChangeState(EGameState.READY);
+                break;
+            case "Secret":
+                gameObjectSecret.SetActive(true);
+                secretAni[POP_IN_ANIMATION_NAME].speed = 1;
+                secretAni[POP_IN_ANIMATION_NAME].time = 0;
+                secretAni.Play(POP_IN_ANIMATION_NAME);
+                break;
+            case "Close":                
+                secretAni[POP_IN_ANIMATION_NAME].speed = -1;
+                secretAni[POP_IN_ANIMATION_NAME].time = secretAni[POP_IN_ANIMATION_NAME].length;
+                secretAni.Play(POP_IN_ANIMATION_NAME);
                 break;
         }
     }
@@ -33,8 +54,6 @@ public class LoginUIController : MonoBehaviour
         bool isShow = score != 0;
         if (gameObjectHighScore.activeSelf != isShow)
             gameObjectHighScore.SetActive(isShow);
-        //TODO set score
-        //
         if (isShow)
         {
             for (int i = 0; i < numberImages.Length; i++)
@@ -47,7 +66,14 @@ public class LoginUIController : MonoBehaviour
 
     public void SetPlayed()
     {        
-        gameObjectCream.SetActive(true);
+        if (!gameObjectCream.activeSelf)
+            gameObjectCream.SetActive(true);
+    }
+    public void SetUnlockSecret()
+    {
+        spriteRendererAsa.sprite = kingAsa;
+        if (!buttonSecret.activeSelf)
+            buttonSecret.SetActive(true);
     }
 
     public void SetFull()
@@ -56,19 +82,19 @@ public class LoginUIController : MonoBehaviour
         spriteRendererCake.sprite = plate;
         spriteRendererCake.transform.localPosition = platePosition.localPosition;
     }
-
+    public void PlayOpenAnimation()
+    {
+        ani.Play(LOGIN_ANIMATION_NAME);
+    }
   
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON_NEXT);
+        Debug.Log("login uicontroller");
+        instance = this;
         ani = GetComponent<Animation>();
-        if (isFirstOpen)
-        {
-            isFirstOpen = false;
-            ani.Play(LOGIN_ANIMATION_NAME);
-        }
-
+        secretAni = gameObjectSecret.GetComponent<Animation>();
+        gameObjectSecret.GetComponent<AnimationEventListener>().sender += AnimationEvent;
         Transform trans = gameObjectHighScore.transform.Find(NUMBER_ROOT_NAME);
         numberImages = new Image[trans.childCount];
         int j = 0;
@@ -78,9 +104,15 @@ public class LoginUIController : MonoBehaviour
             j++;
         }
         gameObjectCream.SetActive(false);
+        gameObjectSecret.SetActive(false);
+    }
 
-        //TODO check high score
-        SetHighScore(0);
+    void AnimationEvent(string name)
+    {
+        if ((name == "start") && (secretAni[POP_IN_ANIMATION_NAME].speed == -1))
+        {
+            gameObjectSecret.SetActive(false);
+        }
     }
 
 }

@@ -184,7 +184,6 @@ public class Player : MonoBehaviour
                 bodyCol.tag = COLLIDER_TAG_PLAYER;
                 GameUIController.Instance.SetFever(false);
                 animator.SetBool(ANIMATOR_IS_FEVER_NAME, false);
-                Debug.Log("tempScale->" + tempScale);
                 SetScale(tempScale);
                 speed = SPEED;
                 maxTurnSpeed = TURN_SPEED;
@@ -216,7 +215,6 @@ public class Player : MonoBehaviour
     public void SetHit()
     {
         nowHp--;
-        Debug.Log("ouch! now hp->" + nowHp);
         GameUIController.Instance.SetHp(nowHp);
         animator.SetBool(ANIMATOR_IS_HIT_NAME, true);
         if (nowHp <= 0)//TODO pause a second or sth
@@ -225,6 +223,7 @@ public class Player : MonoBehaviour
         }
         else
         {
+            AudioManager.Instance.PlaySound(EAudioClipKind.HURT);
             hitColdDownTime = COLD_DOWN_TIME;
             bodyCol.enabled = false;
         }

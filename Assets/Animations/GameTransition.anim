@@ -1077,6 +1077,27 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
+  - time: 0.33333334
+    functionName: OnEvent
+    data: 0
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.78333336
+    functionName: OnEvent
+    data: 1
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.4333333
+    functionName: OnEvent
+    data: 2
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 1.8333334
     functionName: OnEvent
     data: end

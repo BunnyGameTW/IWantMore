@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Audio;
 public enum EAudioClipKind
 {
     COUNTDOWN = 0,
@@ -11,13 +11,10 @@ public enum EAudioClipKind
     END = 4,
     BUTTON = 5,
     BUTTON_NEXT = 6,
-    FEVER = 7,
+    SHOOT = 7,
     HURT = 8,
-
-    //SHOOT = 0,
-    //SPAWN = 1,
-    //HIT = 4,
-    //TRANSITION = 9,
+    HIT = 9,
+    TRANSITION = 10,
 }
 
 public class AudioManager : MonoBehaviour
@@ -44,18 +41,33 @@ public class AudioManager : MonoBehaviour
     Dictionary<EAudioClipKind, AudioClip> map;
     List<Dictionary<float, AudioSource>> inUsePool;
     List<AudioSource> pool;
+    List<int> hitClipsList;
+    public AudioMixerGroup mixerGroup;
+    //public AudioMixer mixer;
     // Start is called before the first frame update
     void Awake()
     {
         instance = this;
+        //mixerGroup = mixer.FindMatchingGroups("Master")[0];
+
         map = new Dictionary<EAudioClipKind, AudioClip>(audioClips.Length);
         for (int i = 0; i < audioClips.Length; i++)
         {
             map.Add((EAudioClipKind)i, audioClips[i]);
         }
         InitPool();
+
+        hitClipsList = new List<int>(hitClips.Length);
+        ResetHitList();
+
     }
- 
+    void ResetHitList()
+    {
+        for (int i = 0; i < hitClips.Length; i++)
+        {
+            hitClipsList.Add(i);
+        }
+    }
     void InitPool()
     {
         pool = new List<AudioSource>(INITIAL_POOL_COUNT);
@@ -64,6 +76,7 @@ public class AudioManager : MonoBehaviour
         {
             GameObject go = new GameObject("audio");
             AudioSource a = go.AddComponent<AudioSource>();
+            a.outputAudioMixerGroup = mixerGroup;
             pool.Add(a);
         }
     }
@@ -102,10 +115,30 @@ public class AudioManager : MonoBehaviour
         }
     }
 
-    public void PlaySound(EAudioClipKind clip)
+    public void PlaySound(EAudioClipKind clip, float volume = 1.0f)
     {
         AudioSource a = GetAudioSource(map[clip].length);
         a.PlayOneShot(map[clip]);
+        a.volume = volume;
+    }
+
+    public void PlayTransition(int i)
+    {
+        AudioSource a = GetAudioSource(transitionClips[i].length);
+        a.PlayOneShot(transitionClips[i]);
+        a.volume = 1;
+    }
+    public void PlayHit()
+    {
+        if (hitClipsList.Count == 0)
+            ResetHitList();
+        int v = Random.Range(0, hitClipsList.Count);
+
+        AudioSource a = GetAudioSource(hitClips[hitClipsList[v]].length);
+        a.PlayOneShot(hitClips[hitClipsList[v]]);
+        a.volume = 1;
+
+        hitClipsList.RemoveAt(v);
     }
 
     // Update is called once per frame

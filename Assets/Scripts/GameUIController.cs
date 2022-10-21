@@ -7,8 +7,12 @@ public class GameUIController : MonoBehaviour
 {
     const string COMBO_TEXT_IMAGE_NAME = "combo";
     const string COMBO_IMAGE_ROOT_NAME = "comboRoot";
+    const string COMBO_IMAGE_ROOT_BG_NAME = "comboRootBg";
     const string FEVER_TEXT_IMAGE_NAME = "fever";
+    const float COMBO_TEXT_WIDTH_RATIO = 0.55f;
+    const float COMBO_DIGIT_RATIO = 0.15f;
 
+    //TODO MAX combo score
     public GameObject hpRoot, scoreRoot, comboRoot, feverRoot;
     public Sprite hpSprite;
     public Sprite[] numberSprites;
@@ -19,7 +23,7 @@ public class GameUIController : MonoBehaviour
     public Canvas canvas;
 
     GameObject[] gameObjectHps;
-    Image[] scoreImages, comboImages;
+    Image[] scoreImages, comboImages, comboBgImages;
     Image comboTextImage, feverImage;
 
     //TODO leaderboard
@@ -94,7 +98,6 @@ public class GameUIController : MonoBehaviour
             score = Mathf.FloorToInt((float)score / 10.0f);
         }
     }
-
     public void SetCombo(int combo, float _comboTime = 0)
     {
         if (combo == 0)
@@ -108,8 +111,12 @@ public class GameUIController : MonoBehaviour
         {            
             for (int i = 0; i < comboImages.Length; i++)
             {
-                comboImages[i].sprite = numberSprites[combo % 10];
+                int v = combo % 10;
+                comboImages[i].sprite = numberSprites[v];
+                comboBgImages[i].sprite = numberSprites[v];
                 combo = Mathf.FloorToInt((float)combo / 10.0f);
+
+                comboImages[i].fillAmount = 1;
             }
 
             comboTextImage.fillAmount = 1;
@@ -191,16 +198,34 @@ public class GameUIController : MonoBehaviour
             comboImages[j] = trans.GetChild(i - 1).GetComponent<Image>();
             j++;
         }
+
+        trans = comboRoot.transform.Find(COMBO_IMAGE_ROOT_BG_NAME);
+        comboBgImages = new Image[trans.transform.childCount];
+        j = 0;
+        for (int i = trans.childCount; i > 0; i--)
+        {
+            comboBgImages[j] = trans.GetChild(i - 1).GetComponent<Image>();
+            j++;
+        }
+
         feverImage = feverRoot.transform.Find(FEVER_TEXT_IMAGE_NAME).GetComponent<Image>();
     }
-
     // Update is called once per frame
     void Update()
     {
         if (comboTime > 0)
         {
             comboTime -= Time.deltaTime;
-            comboTextImage.fillAmount = comboTime / maxComboTime;            
+            float r = comboTime / maxComboTime;
+            if (r < COMBO_TEXT_WIDTH_RATIO)
+                comboTextImage.fillAmount = r / COMBO_TEXT_WIDTH_RATIO;
+            for (int i = 0; i < comboImages.Length; i++)
+            {
+                float v = 1.0f - (COMBO_DIGIT_RATIO * i);
+                float v2 = 1.0f - (COMBO_DIGIT_RATIO * (i + 1));
+                if (r < v && r > v2)//0.7 + 0.1 * (i + 1)))
+                    comboImages[i].fillAmount = (r - v2) / COMBO_DIGIT_RATIO;
+            }
             if (comboTime <= 0 && comboRoot.activeSelf)
             {
                 comboRoot.SetActive(false);

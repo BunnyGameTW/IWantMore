@@ -161,6 +161,9 @@ public class Enemy : MonoBehaviour
                 e.SetPosition(pos);
                 e.SetTarget(pos + v);
                 e.SetState(EEnemyState.NORMAL);
+                if (IsInView(pos))
+                    AudioManager.Instance.PlaySound(EAudioClipKind.SHOOT, 0.2f);
+
             }
         }
 
@@ -171,6 +174,11 @@ public class Enemy : MonoBehaviour
                 state = EEnemyState.NORMAL;
         }
         
+    }
+    bool IsInView(Vector3 pos)
+    {
+        Vector3 viewPos = Camera.main.WorldToViewportPoint(pos);
+        return (viewPos.x >= 0 && viewPos.x <= 1 && viewPos.y >= 0 && viewPos.y <= 1);
     }
 
     Vector3 GetRotation(float angle)
@@ -192,6 +200,7 @@ public class Enemy : MonoBehaviour
    
     void OnTriggerEnter2D(Collider2D col)
     {
+        
         //Debug.Log("enemy collided with " + col.tag);
         if (state == EEnemyState.COLD_DOWN || state == EEnemyState.NONE)
             return;
@@ -210,7 +219,7 @@ public class Enemy : MonoBehaviour
 
     void OnTriggerStay2D(Collider2D col)
     {
-        if (state == EEnemyState.COLD_DOWN || state == EEnemyState.NONE)
+        if (state == EEnemyState.COLD_DOWN || state == EEnemyState.NONE || state == EEnemyState.DIE)
             return;
 
         if (col.tag == Player.COLLIDER_TAG_HAND)

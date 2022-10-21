@@ -27,8 +27,8 @@ public class GameManager : MonoBehaviour
     const float COMBO_TIME = 1.0f;
     const float COMBO_BONUS = 2.0f;
 
-    const int MAX_SCORE = 99999;
-
+    const int MAX_SCORE = 9999999;
+    const int UNLOCK_SECRET_SCORE = 100;//TODO
     const int INITIAL_ENEMY_COUNT = 20;
     const int EXPAND_POOL_COUNT = 10;
     const int INITIAL_PARTICLE_COUNT = 10;
@@ -42,9 +42,9 @@ public class GameManager : MonoBehaviour
     const string SPAWN_ROOT_NAME = "enemyRoot";
 
     const string TRANISITION_NAME = "GameTransition";
-    const float SLOW_MOTION_TIME = 1.0f;
+    const float SLOW_MOTION_TIME = 2.0f;
     const float SLOW_MOTION_TIME_SCALE = 0.1f;
-
+    const string SAVE_NAME = "save";//NOTE 只用來存分數
     Vector2 POOL_IDLE_POSITION = new Vector2(15, 0);
     int[] fatScoreArray = {
         10, 200, 500, 1000, 2000,
@@ -74,14 +74,14 @@ public class GameManager : MonoBehaviour
     EGameState state, nextState;
     Player player;
     float comboTimer, spawnTimer, spawnTime, endTimer;
-    int score, comboCounter;
-   
+    int score, comboCounter, highScore;    
     Dictionary<EEnemyKind, List<Enemy>> enemyPool, enemyInUsePool;
     List<Enemy> enemyList;
     Vector3[] spawnPositions;
     int countDownCounter;
     Transform spawnRoot;
-
+    bool isFirstOpen = true;
+    bool hasUnlockSecret;
     Dictionary<EGameState, GameObject> gameObjectRoots;
     List<GameObject> particlePool, particleInUsePool;
     #region life cycle
@@ -90,6 +90,13 @@ public class GameManager : MonoBehaviour
         Debug.Log("game manager");
         instance = this;
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+
+        string data = PlayerPrefs.GetString(SAVE_NAME);
+        if (data != "")
+            highScore = int.Parse(data);
+        else
+            highScore = 0;
+        hasUnlockSecret = highScore > UNLOCK_SECRET_SCORE;
 
         AnimationEventListener [] events = FindObjectsOfType<AnimationEventListener>();//TODO
         for (int i = 0; i < events.Length; i++)
@@ -114,8 +121,18 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;       
     }
 
+    void MyDebug()
+    {
+        if (Input.GetKeyDown(KeyCode.S))
+            SpawnEnemy();
+        if (Input.GetKeyDown(KeyCode.R))
+            PlayerPrefs.SetString(SAVE_NAME, "");
+    }
+
     void Update()
     {
+        MyDebug();
+
         //spawn enemy
         if (state == EGameState.GAME)
         {
@@ -238,11 +255,20 @@ public class GameManager : MonoBehaviour
     }
 
     void SetStateStart(EGameState _state)
-    {
-        
+    {        
         switch (_state)
         {
             case EGameState.TITLE:
+                if (!isFirstOpen)
+                {
+                    LoginUIController.Instance.SetPlayed();
+                    if (highScore > 0)
+                        LoginUIController.Instance.SetFull();
+                }
+                    
+                LoginUIController.Instance.SetHighScore(highScore);
+                if (hasUnlockSecret)
+                    LoginUIController.Instance.SetUnlockSecret();
                 break;
             case EGameState.READY:
                 player.Reset();
@@ -255,31 +281,51 @@ public class GameManager : MonoBehaviour
             case EGameState.END:
                 break;
             case EGameState.SCORE:
-                EndUIController.Instance.SetScore(score);//TODO high score & secret page
+                AudioManager.Instance.PlaySound(EAudioClipKind.SCORE, 0.5f);
+                bool isHighScore = score > highScore;
+                if (isHighScore)
+                {
+                    highScore = score;
+                    PlayerPrefs.SetString(SAVE_NAME, highScore.ToString());
+                }
+                EndUIController.Instance.SetScore(score, isHighScore);
+                if (score > UNLOCK_SECRET_SCORE && !hasUnlockSecret)
+                {
+                    hasUnlockSecret = true;
+                    EndUIController.Instance.SetUnlockSecret();
+                }
                 break;
         }
     }
-
     void SetState(EGameState _state)
     {
         state = _state;
 
-        //GameUIController.Instance.SetState(_state);
         switch (state)
         {
             case EGameState.TITLE:
+                if (isFirstOpen)
+                {
+                    isFirstOpen = false;
+                    LoginUIController.Instance.PlayOpenAnimation();
+                }
+                LoginUIController.Instance.SetHighScore(highScore);
+                if (hasUnlockSecret)
+                    LoginUIController.Instance.SetUnlockSecret();
                 break;
             case EGameState.READY:
+                AudioManager.Instance.PlaySound(EAudioClipKind.COUNTDOWN, 0.3f);
                 InvokeRepeating("CountDown", 0, 1);
                 break;
             case EGameState.GAME:
                 player.SetState(EPlayerState.NORMAL);
                 break;
             case EGameState.END:
+                AudioManager.Instance.PlaySound(EAudioClipKind.END, 0.5f);
                 Time.timeScale = SLOW_MOTION_TIME_SCALE;
                 endTimer = SLOW_MOTION_TIME;
                 player.SetEnd();
-
+          
                 //in use enemy stop moving
                 for (int i = 0; i < enemies.Length; i++)
                 {
@@ -291,7 +337,6 @@ public class GameManager : MonoBehaviour
                 }
                 break;
             case EGameState.SCORE:
-
                 break;
         }
     }
@@ -300,8 +345,6 @@ public class GameManager : MonoBehaviour
     #region event
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log("OnSceneLoaded: " + scene.name);
-
         gameObjectRoots.Add(EGameState.TITLE, roots[0]);
         gameObjectRoots.Add(EGameState.READY, roots[1]);
         gameObjectRoots.Add(EGameState.GAME, roots[1]);
@@ -324,7 +367,6 @@ public class GameManager : MonoBehaviour
     }
     public void OnEnemyDie(int _score)
     {
-        //refresh combo timer
         if (comboTimer > 0)
         {
             comboCounter++;
@@ -332,48 +374,52 @@ public class GameManager : MonoBehaviour
         }
         else
             score += _score;
-
-        comboTimer = COMBO_TIME;        
+        //refresh combo timer
+        comboTimer = COMBO_TIME;
         GameUIController.Instance.SetCombo(comboCounter, comboTimer);
 
-        Debug.Log("score->" + score + ", combo->" + comboCounter);
+        //check score limit
+        if (score >= MAX_SCORE)
+            score = MAX_SCORE;
+        GameUIController.Instance.SetScore(score);
+
+        AudioManager.Instance.PlayHit();
 
         //check difficulty
-        int index = difficulty;
-        for (int i = difficulty; i < fatScoreArray.Length; i++)
+        if (difficulty != fatScoreArray.Length)
         {
-            if (score >= fatScoreArray[i])
-                index = i + 1;
-            else
-                break;
-        }
-        if (index != difficulty)
-        {
-            int offset = index - difficulty;
-            difficulty = index;
-            GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index]);
-
-            for (int i = 0; i < offset; i++)
+            int index = difficulty;
+            for (int i = difficulty; i < fatScoreArray.Length; i++)
             {
-                spawnTime *= SPAWN_TIME_DECREASE_RATIO;
-                player.BecomeFatter();
-                player.SetFever();
+                if (score >= fatScoreArray[i])
+                    index = i + 1;
+                else
+                    break;
+            }
+            if (index != difficulty)
+            {
+                int offset = index - difficulty;
+                difficulty = index;
+                GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index]);
 
-                for (int k = 0; k < enemies.Length; k++)
+                for (int i = 0; i < offset; i++)
                 {
-                    int count = enemyInUsePool[enemies[k].kind].Count;
-                    for (int j = 0; j < count; j++)
+                    spawnTime *= SPAWN_TIME_DECREASE_RATIO;
+                    player.BecomeFatter();
+                    AudioManager.Instance.PlaySound(EAudioClipKind.LEVEL_UP);
+                    player.SetFever();
+
+                    for (int k = 0; k < enemies.Length; k++)
                     {
-                        enemyInUsePool[enemies[k].kind][j].AddDifficulty();
+                        int count = enemyInUsePool[enemies[k].kind].Count;
+                        for (int j = 0; j < count; j++)
+                        {
+                            enemyInUsePool[enemies[k].kind][j].AddDifficulty();
+                        }
                     }
                 }
             }
         }
-
-        GameUIController.Instance.SetScore(score);
-        //TODO secret end?!
-        //if (score >= MAX_SCORE)
-
     }
 
     void AnimationEvent(GameObject go)//TODO
@@ -401,6 +447,10 @@ public class GameManager : MonoBehaviour
                 transitionAni[TRANISITION_NAME].speed = -1;
                 transitionAni[TRANISITION_NAME].time = transitionAni[TRANISITION_NAME].length;
                 transitionAni.Play(TRANISITION_NAME);
+            }
+            else if (name != "start")
+            {
+                AudioManager.Instance.PlayTransition(int.Parse(name));
             }
         }
         else
@@ -522,7 +572,6 @@ public class GameManager : MonoBehaviour
             SetState(EGameState.GAME);
         }
         GameUIController.Instance.SetCountDown(countDownCounter);
-        //Debug.Log("CountDown->" + countDownCounter);
     }
     #endregion
 }
