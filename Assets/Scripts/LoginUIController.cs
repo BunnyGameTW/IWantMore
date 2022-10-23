@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using LootLocker.Requests;
 public class LoginUIController : MonoBehaviour
 {
     const string LOGIN_ANIMATION_NAME = "Login";
@@ -80,6 +81,14 @@ public class LoginUIController : MonoBehaviour
                 break;
             case "Prev":
                 ChangePage(-1);
+                break;
+            case "Rank":
+                //TODO scrollrect
+                LootLockerLeaderboardMember [] datas = GameManager.Instance.GetLeaderBoardDatas();
+                for (int i = 0; i < datas.Length; i++)
+                {
+
+                }
                 break;
         }
     }

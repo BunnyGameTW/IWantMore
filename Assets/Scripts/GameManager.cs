@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using LootLocker.Requests;
 public enum EGameState
 {
     TITLE = 1,
@@ -87,7 +88,7 @@ public class GameManager : MonoBehaviour
     Dictionary<EGameState, GameObject> gameObjectRoots;
     List<GameObject> particlePool, particleInUsePool;
     List<Vector3> enemyPositionList;
-
+    LeaderboardController leaderboardController;
     #region life cycle
     void Awake()
     {
@@ -126,7 +127,8 @@ public class GameManager : MonoBehaviour
         spawnRoot = GameObject.Find(SPAWN_ROOT_NAME).transform;
         InitPool();
         gameObjectRoots = new Dictionary<EGameState, GameObject>();
-        SceneManager.sceneLoaded += OnSceneLoaded;       
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        leaderboardController = GetComponent<LeaderboardController>();
     }
 
     void MyDebug()
@@ -139,7 +141,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        MyDebug();
+       // MyDebug();
 
         //spawn enemy
         if (state == EGameState.GAME)
@@ -180,6 +182,23 @@ public class GameManager : MonoBehaviour
     #endregion
    
     #region public
+    public string GetPlayerName()
+    {
+        return leaderboardController.playerName;
+    }
+    public void SetPlayerName(string name)
+    {
+        leaderboardController.playerName = name;
+    }
+
+    public void SubmitScore(System.Action callback)
+    {
+        leaderboardController.SubmitScore(score, (LootLockerSubmitScoreResponse response) =>
+        {
+            Debug.Log(response.success);
+            callback();//TODO 改動某筆資料就好? 還是要全部重取一次
+        });
+    }
     public void PlayDieEffect(Vector3 _pos)
     {
         GameObject go;

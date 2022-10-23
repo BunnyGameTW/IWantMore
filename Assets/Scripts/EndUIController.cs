@@ -78,7 +78,18 @@ public class EndUIController : MonoBehaviour
                 GameManager.Instance.ChangeState(EGameState.TITLE);
                 break;
             case "Upload":
-                //TODO show input field & upload to firebase & show leaderboard
+                string _name = GameManager.Instance.GetPlayerName();
+                if (_name == "")
+                {
+                    //show input field
+                }
+                else
+                {
+                    GameManager.Instance.SubmitScore(() => {
+                        //TODO show result?
+                        ShowScores();
+                    });
+                }
                 break;
             case "End":
                 secretAni[POP_IN_ANIMATION_NAME].speed = -1;
@@ -87,5 +98,10 @@ public class EndUIController : MonoBehaviour
 
                 break;
         }
+    }
+
+    void ShowScores()
+    {
+
     }
 }
