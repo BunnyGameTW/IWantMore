@@ -89,6 +89,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("game manager");
         instance = this;
+
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 
         string data = PlayerPrefs.GetString(SAVE_NAME);

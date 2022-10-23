@@ -100,7 +100,7 @@ public class AudioManager : MonoBehaviour
 
             GameObject go = new GameObject("audio");
             AudioSource a = go.AddComponent<AudioSource>();
-
+            a.outputAudioMixerGroup = mixerGroup;
             Dictionary<float, AudioSource> dic = new Dictionary<float, AudioSource>(1);
             dic.Add(t, a);
             inUsePool.Add(dic);
@@ -109,6 +109,7 @@ public class AudioManager : MonoBehaviour
             {
                 GameObject go2 = new GameObject("audio");
                 AudioSource a2 = go2.AddComponent<AudioSource>();
+                a2.outputAudioMixerGroup = mixerGroup;
                 pool.Add(a2);
             }
             return a;
