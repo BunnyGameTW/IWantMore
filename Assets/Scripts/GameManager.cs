@@ -26,9 +26,10 @@ public class GameManager : MonoBehaviour
     const float GAP = 1;
     const float COMBO_TIME = 1.0f;
     const float COMBO_BONUS = 2.0f;
-
+    const int MAX_COMBO = 999;
     const int MAX_SCORE = 9999999;
-    const int UNLOCK_SECRET_SCORE = 100;//TODO
+    const int MAX_ENEMY_COUNT = 200;
+    const int UNLOCK_SECRET_SCORE = 10000;//TODO
     const int INITIAL_ENEMY_COUNT = 20;
     const int EXPAND_POOL_COUNT = 10;
     const int INITIAL_PARTICLE_COUNT = 10;
@@ -42,6 +43,7 @@ public class GameManager : MonoBehaviour
     const string SPAWN_ROOT_NAME = "enemyRoot";
 
     const string TRANISITION_NAME = "GameTransition";
+
     const float SLOW_MOTION_TIME = 2.0f;
     const float SLOW_MOTION_TIME_SCALE = 0.1f;
     const string SAVE_NAME = "save";//NOTE 只用來存分數
@@ -84,6 +86,8 @@ public class GameManager : MonoBehaviour
     bool hasUnlockSecret;
     Dictionary<EGameState, GameObject> gameObjectRoots;
     List<GameObject> particlePool, particleInUsePool;
+    List<Vector3> enemyPositionList;
+
     #region life cycle
     void Awake()
     {
@@ -116,6 +120,9 @@ public class GameManager : MonoBehaviour
         }
         maxDistance += GAP;
 
+        enemyPositionList = new List<Vector3>(spawnPositions);
+        ResetEnemyPositionList();
+
         spawnRoot = GameObject.Find(SPAWN_ROOT_NAME).transform;
         InitPool();
         gameObjectRoots = new Dictionary<EGameState, GameObject>();
@@ -125,7 +132,7 @@ public class GameManager : MonoBehaviour
     void MyDebug()
     {
         if (Input.GetKeyDown(KeyCode.S))
-            SpawnEnemy();
+            SpawnEnemy(10);
         if (Input.GetKeyDown(KeyCode.R))
             PlayerPrefs.SetString(SAVE_NAME, "");
     }
@@ -370,11 +377,14 @@ public class GameManager : MonoBehaviour
     {
         if (comboTimer > 0)
         {
-            comboCounter++;
+            if (comboCounter < MAX_COMBO)
+                comboCounter++;
+            
             score += (int)(_score * COMBO_BONUS);
         }
         else
             score += _score;
+
         //refresh combo timer
         comboTimer = COMBO_TIME;
         GameUIController.Instance.SetCombo(comboCounter, comboTimer);
@@ -542,26 +552,41 @@ public class GameManager : MonoBehaviour
         return EEnemyKind.NORMAL;
     }
 
+    public bool CheckCanSpawnEnemy()
+    {
+        int count = 0;
+        foreach (var item in enemyInUsePool)
+        {
+            count += item.Value.Count;
+        }
+        return (count < MAX_ENEMY_COUNT);
+    }
+
     void SpawnEnemy(int count = 1)
     {
-
-        List<int> number = new List<int>(count);
-        for (int i = 0; i < spawnPositions.Length; i++)
-        {
-            number.Add(i);
-        }
-
-        
         for (int i = 0; i < count; i++)
         {
+            if (!CheckCanSpawnEnemy())
+                continue;
+
+            Vector3 pos = enemyPositionList[Random.Range(0, enemyPositionList.Count)];
+            enemyPositionList.Remove(pos);
+            if (enemyPositionList.Count == 0)
+                ResetEnemyPositionList();
+
             Enemy e = GetEnemy(GetRandomEnemyKind(difficulty));
             e.SetState(EEnemyState.NORMAL);
-            int v = Random.Range(0, number.Count);
-            number.Remove(v);
-            e.SetPosition(spawnPositions[v]);
+            e.SetPosition(pos);
             e.SetTarget(player.transform.position);
         }
+    }
 
+    void ResetEnemyPositionList()
+    {
+        for (int i = 0; i < spawnPositions.Length; i++)
+        {
+            enemyPositionList.Add(spawnPositions[i]);
+        }
     }
 
     void CountDown()

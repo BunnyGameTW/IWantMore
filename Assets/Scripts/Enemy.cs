@@ -86,10 +86,13 @@ public class Enemy : MonoBehaviour
                 float value = (360 / bulletNumber);
                 for (int i = 0; i < bulletNumber; i++)
                 {
+                    if (!GameManager.Instance.CheckCanSpawnEnemy())
+                        continue;
+
+                    Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.NORMAL);
                     float angle = value * (i + 1);
                     Vector3 v = GetRotation(angle);
                     Vector3 pos = transform.position;
-                    Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.NORMAL);
 
                     e.SetPosition(pos);
                     e.SetTarget(pos + v);
@@ -144,7 +147,11 @@ public class Enemy : MonoBehaviour
             spawnTimer += Time.deltaTime;            
             if (spawnTimer >= (SPAWN_TIME - shootAnimationTime) && !animator.GetBool(ANIMATOR_SHOOT_TRIGGER))
             {
-                animator.SetBool(ANIMATOR_SHOOT_TRIGGER, true);
+                //check spawn
+                if (!GameManager.Instance.CheckCanSpawnEnemy())
+                    spawnTimer = 0;
+                else
+                    animator.SetBool(ANIMATOR_SHOOT_TRIGGER, true);
             }
             if (spawnTimer >= SPAWN_TIME)
             {

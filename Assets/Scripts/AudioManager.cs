@@ -68,15 +68,22 @@ public class AudioManager : MonoBehaviour
             hitClipsList.Add(i);
         }
     }
+    
+    AudioSource CreateNewObject()
+    {
+        GameObject go = new GameObject("audio");
+        AudioSource a = go.AddComponent<AudioSource>();
+        a.outputAudioMixerGroup = mixerGroup;
+        return a;
+    }
+
     void InitPool()
     {
         pool = new List<AudioSource>(INITIAL_POOL_COUNT);
         inUsePool = new List<Dictionary<float, AudioSource>>(INITIAL_POOL_COUNT);
         for (int i = 0; i < INITIAL_POOL_COUNT; i++)
         {
-            GameObject go = new GameObject("audio");
-            AudioSource a = go.AddComponent<AudioSource>();
-            a.outputAudioMixerGroup = mixerGroup;
+            AudioSource a = CreateNewObject();
             pool.Add(a);
         }
     }
@@ -97,19 +104,15 @@ public class AudioManager : MonoBehaviour
         {
             pool.Capacity += EXPAND_POOL_COUNT;
             inUsePool.Capacity += EXPAND_POOL_COUNT;
-
-            GameObject go = new GameObject("audio");
-            AudioSource a = go.AddComponent<AudioSource>();
-            a.outputAudioMixerGroup = mixerGroup;
+            
             Dictionary<float, AudioSource> dic = new Dictionary<float, AudioSource>(1);
+            AudioSource a = CreateNewObject();
             dic.Add(t, a);
             inUsePool.Add(dic);
 
             for (int i = 1; i < EXPAND_POOL_COUNT; i++)
             {
-                GameObject go2 = new GameObject("audio");
-                AudioSource a2 = go2.AddComponent<AudioSource>();
-                a2.outputAudioMixerGroup = mixerGroup;
+                AudioSource a2 = CreateNewObject();
                 pool.Add(a2);
             }
             return a;

@@ -11,8 +11,7 @@ public class GameUIController : MonoBehaviour
     const string FEVER_TEXT_IMAGE_NAME = "fever";
     const float COMBO_TEXT_WIDTH_RATIO = 0.55f;
     const float COMBO_DIGIT_RATIO = 0.15f;
-
-    //TODO MAX combo score
+   
     public GameObject hpRoot, scoreRoot, comboRoot, feverRoot;
     public Sprite hpSprite;
     public Sprite[] numberSprites;

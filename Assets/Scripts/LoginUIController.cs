@@ -160,9 +160,9 @@ public class LoginUIController : MonoBehaviour
         }
         if ((name == "startScale"))
         {
-            if (howAni[SCALE_IN_ANIMATION_NAME].speed == -1)
+            if (howAni[SCALE_IN_ANIMATION_NAME].speed == -1 && gameObjectHow.activeSelf)
                 gameObjectHow.SetActive(false);
-            else if(creditAni[SCALE_IN_ANIMATION_NAME].speed == -1)
+            else if(creditAni[SCALE_IN_ANIMATION_NAME].speed == -1 && gameObjectCredit.activeSelf)
                 gameObjectCredit.SetActive(false);
         }
     }
