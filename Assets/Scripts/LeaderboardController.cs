@@ -8,23 +8,24 @@ public class LeaderboardController : MonoBehaviour
     const int MAX_RANKING_NUMBER = 100;
 
     int memberId = 0;
-    public string playerName { get; set; }
+    string playerName;
     LootLockerLeaderboardMember[] scores;
     // Start is called before the first frame update
     void Start()
     {
         playerName = PlayerPrefs.GetString("PlayerName");
-
-        ShowScores((LootLockerLeaderboardMember[] _scores) => {
-            for (int i = 0; i < _scores.Length; i++)
-            {
-                Debug.Log(_scores[i].rank + ", " + _scores[i].member_id + ", " + _scores[i].score);//", " + scores[i].player.name +
-            }
-        });
-        //CheckSetName();
-        //SubmitScore("BunnyGame", 100);
     }
 
+    public string GetPlayerName()
+    {
+        return playerName;
+    }
+
+    public void SetPlayerName(string name)
+    {
+        playerName = name;
+        PlayerPrefs.SetString("PlayerName", name);
+    }
     
     public void SubmitScore(int score, System.Action<LootLockerSubmitScoreResponse> callback)
     {

@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour
     public float maxDistance { get; set; }
 
     EGameState state, nextState;
-    Player player;
+    public Player player;
     float comboTimer, spawnTimer, spawnTime, endTimer;
     int score, comboCounter, highScore;    
     Dictionary<EEnemyKind, List<Enemy>> enemyPool, enemyInUsePool;
@@ -89,13 +89,14 @@ public class GameManager : MonoBehaviour
     List<GameObject> particlePool, particleInUsePool;
     List<Vector3> enemyPositionList;
     LeaderboardController leaderboardController;
+
     #region life cycle
     void Awake()
     {
         Debug.Log("game manager");
         instance = this;
 
-        player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        //player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 
         string data = PlayerPrefs.GetString(SAVE_NAME);
         if (data != "")
@@ -136,12 +137,28 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.S))
             SpawnEnemy(10);
         if (Input.GetKeyDown(KeyCode.R))
+        {
             PlayerPrefs.SetString(SAVE_NAME, "");
+            leaderboardController.SetPlayerName("");
+        }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            if (leaderboardController.GetPlayerName() == "")
+                leaderboardController.SetPlayerName("BunnyGame");
+
+            leaderboardController.SubmitScore(10, (respoose) => {
+                LoginUIController.Instance.ShowLeaderBoard(respoose.rank);
+            });
+        }
+        //if (Input.GetKeyDown(KeyCode.A))
+            //leaderboardController
+
+
     }
 
     void Update()
     {
-       // MyDebug();
+        MyDebug();
 
         //spawn enemy
         if (state == EGameState.GAME)
@@ -182,23 +199,29 @@ public class GameManager : MonoBehaviour
     #endregion
    
     #region public
+    public void GetLeaderBoardDatas(System.Action<LootLockerLeaderboardMember[]> callback)
+    {
+        leaderboardController.ShowScores((LootLockerLeaderboardMember[] members) => {
+            callback(members);
+        });
+    }
     public string GetPlayerName()
     {
-        return leaderboardController.playerName;
+        return leaderboardController.GetPlayerName();
     }
     public void SetPlayerName(string name)
     {
-        leaderboardController.playerName = name;
+        leaderboardController.SetPlayerName(name);
     }
 
-    public void SubmitScore(System.Action callback)
+    public void SubmitScore(System.Action<LootLockerSubmitScoreResponse> callback)
     {
         leaderboardController.SubmitScore(score, (LootLockerSubmitScoreResponse response) =>
         {
-            Debug.Log(response.success);
-            callback();//TODO 改動某筆資料就好? 還是要全部重取一次
+            callback(response);
         });
     }
+
     public void PlayDieEffect(Vector3 _pos)
     {
         GameObject go;
