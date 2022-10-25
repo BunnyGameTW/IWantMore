@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using MoreMountains.Feedbacks;
 public enum EPlayerState
 {
     NORMAL = 1,
@@ -11,7 +11,7 @@ public enum EPlayerState
 public class Player : MonoBehaviour
 {
     public GameObject hand;
-    public Transform posR, posL;
+    public Transform posR, posL, tempScaleTransform;
     public int hp;
 
     SpriteRenderer sp, bodySp;
@@ -32,7 +32,7 @@ public class Player : MonoBehaviour
 
     EPlayerState state;
     Animator animator;
-
+    MMF_Player feedbackPlayer;
     public const string COLLIDER_TAG_HAND = "hand";
     public const string COLLIDER_TAG_PLAYER = "Player";
 
@@ -47,9 +47,9 @@ public class Player : MonoBehaviour
 
     const float FEVER_TIME = 5.0f;
     const float SPEED_UP_RATIO = 2.0f;
-    const float TURN_SPEED = 1000;
-    const float SMOOTH_TIME = 0.01f;
-    const float SMOOTH_RATIO = 10;
+    const float TURN_SPEED = 10000;
+    const float SMOOTH_TIME = 0.001f;
+    const float SMOOTH_RATIO = 100;
 
     const string ANIMATOR_IS_MOVING_NAME = "isMoving";
     const string ANIMATOR_IS_FEVER_NAME = "isFever";
@@ -64,6 +64,7 @@ public class Player : MonoBehaviour
         Reset();
         GameUIController.Instance.InitHp(nowHp);
         animator = GetComponentInChildren<Animator>();
+        feedbackPlayer = GetComponent<MMF_Player>();
     }
 
     public int GetHp()
@@ -194,9 +195,9 @@ public class Player : MonoBehaviour
 
     void SetScale(float _scale)
     {
+        tempScaleTransform.localScale = new Vector2(_scale, _scale);
+        feedbackPlayer.PlayFeedbacks();
         nowScale = _scale;
-        transform.localScale = new Vector2(_scale, _scale);
-
     }
     public void SetState(EPlayerState _state)
     {
@@ -208,7 +209,7 @@ public class Player : MonoBehaviour
     {
         SetState(EPlayerState.STOP);
         isMoving = false;
-        //TODO
+        //TODO die animation?
         animator.SetBool(ANIMATOR_IS_FEVER_NAME, true);
     }   
     

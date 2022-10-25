@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using LootLocker.Requests;
+using MoreMountains.Feedbacks;
 public enum EGameState
 {
     TITLE = 1,
@@ -31,8 +32,8 @@ public class GameManager : MonoBehaviour
     const int MAX_SCORE = 9999999;
     const int MAX_ENEMY_COUNT = 200;
     const int UNLOCK_SECRET_SCORE = 10000;//TODO
-    const int INITIAL_ENEMY_COUNT = 20;
-    const int EXPAND_POOL_COUNT = 10;
+    const int INITIAL_ENEMY_COUNT = 0;
+    const int EXPAND_POOL_COUNT = 1;
     const int INITIAL_PARTICLE_COUNT = 10;
 
     const int COUNT_DOWN_TIME = 4;
@@ -95,7 +96,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("game manager");
         instance = this;
-
+        
         //player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
 
         string data = PlayerPrefs.GetString(SAVE_NAME);
@@ -135,7 +136,7 @@ public class GameManager : MonoBehaviour
     void MyDebug()
     {
         if (Input.GetKeyDown(KeyCode.S))
-            SpawnEnemy(10);
+            SpawnEnemy(1);
         if (Input.GetKeyDown(KeyCode.R))
         {
             PlayerPrefs.SetString(SAVE_NAME, "");
@@ -150,9 +151,12 @@ public class GameManager : MonoBehaviour
                 LoginUIController.Instance.ShowLeaderBoard(respoose.rank);
             });
         }
-        //if (Input.GetKeyDown(KeyCode.A))
-            //leaderboardController
-
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            //TODO
+            //MMF_Player p = FindObjectOfType<MMF_Player>();            
+            //p.PlayFeedbacks();
+        }
 
     }
 
@@ -163,12 +167,12 @@ public class GameManager : MonoBehaviour
         //spawn enemy
         if (state == EGameState.GAME)
         {
-            spawnTimer += Time.deltaTime;
-            if (spawnTimer >= spawnTime)
-            {
-                spawnTimer = 0;
-                SpawnEnemy(GetRandomEnemyCount(difficulty));
-            }
+            //spawnTimer += Time.deltaTime;
+            //if (spawnTimer >= spawnTime)
+            //{
+            //    spawnTimer = 0;
+            //    SpawnEnemy(GetRandomEnemyCount(difficulty));
+            //}
 
             if (comboTimer > 0)
             {
@@ -255,8 +259,7 @@ public class GameManager : MonoBehaviour
 
     public void ReturnToPool(Enemy e)
     {
-        e.SetState(EEnemyState.NONE);
-        e.SetPosition(POOL_IDLE_POSITION);
+        
         enemyInUsePool[e.kind].Remove(e);
         enemyPool[e.kind].Add(e);
     }
@@ -269,7 +272,7 @@ public class GameManager : MonoBehaviour
             Enemy e = enemyPool[kind][0];
             enemyPool[kind].Remove(e);
             enemyInUsePool[kind].Add(e);
-            
+            e.SetState(EEnemyState.NONE);
             return e;
         }
         else//expand pool
@@ -284,7 +287,7 @@ public class GameManager : MonoBehaviour
             {
                 Enemy e1 = Instantiate(enemies[(int)kind - 1], POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);
                 enemyPool[kind].Add(e1);
-            }            
+            }
             return e;
         }
             
@@ -381,7 +384,7 @@ public class GameManager : MonoBehaviour
                 {
                     foreach (Enemy item in enemyInUsePool[enemies[i].kind])
                     {
-                        item.SetState(EEnemyState.NONE);
+                        item.SetState(EEnemyState.IDLE);
                     }
 
                 }
@@ -533,7 +536,10 @@ public class GameManager : MonoBehaviour
             int count = enemyInUsePool[enemies[i].kind].Count;
             for (int j = 0; j < count; j++)
             {
-                ReturnToPool(enemyInUsePool[enemies[i].kind][enemyInUsePool[enemies[i].kind].Count - 1]);
+                Enemy e = enemyInUsePool[enemies[i].kind][enemyInUsePool[enemies[i].kind].Count - 1];
+                ReturnToPool(e);
+                e.SetPosition(POOL_IDLE_POSITION);
+                //e.SetState(EEnemyState.NONE);
             }
         }
         GameUIController.Instance.SetDifficultyScore(0, fatScoreArray[difficulty]);

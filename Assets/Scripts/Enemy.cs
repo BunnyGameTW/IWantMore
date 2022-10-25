@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MoreMountains.Feedbacks;
 public enum EEnemyKind
 {
     NORMAL = 1,
@@ -13,20 +14,22 @@ public enum EEnemyState
     NORMAL = 1,    
     DIE = 2,
     COLD_DOWN = 3,
+    IDLE = 4
 }
 public class Enemy : MonoBehaviour
 {
     public EEnemyKind kind;
     public int score;
     public float speed;
-    EEnemyState state;
+    EEnemyState state = EEnemyState.NONE;
     Vector3 direction;    
     float timer, spawnTimer;
     float spawnDirection;
     int bulletNumber;
     Animator animator;
     float shootAnimationTime;
-
+    List<MMF_Feedback> feedbacks;
+    MMF_Player feedbackPlayer;
     const int BULLET_NUMBER_MIN = 3; 
     const int BULLET_NUMBER_MAX = 8;
     const float SPAWN_TIME = 3;
@@ -51,7 +54,9 @@ public class Enemy : MonoBehaviour
                 }
             }
         }
-            
+        feedbackPlayer = GetComponent<MMF_Player>();
+        feedbacks = feedbackPlayer.FeedbacksList;
+
         Reset();      
     }
 
@@ -99,13 +104,14 @@ public class Enemy : MonoBehaviour
                     e.SetState(EEnemyState.COLD_DOWN);
                 }
             }
-
+            feedbacks[1].Play(Vector3.zero);
             GameManager.Instance.PlayDieEffect(transform.position);
             GameManager.Instance.ReturnToPool(this);
         }
         else if (state == EEnemyState.NONE)
         {
             Reset();
+            feedbacks[0].Play(Vector3.zero);
         }
         else if (state == EEnemyState.NORMAL)
         {
@@ -128,7 +134,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {        
-        if (state == EEnemyState.DIE || state == EEnemyState.NONE)
+        if (state == EEnemyState.DIE || state == EEnemyState.NONE || state == EEnemyState.IDLE)
             return;
         
         //move to target
@@ -137,6 +143,7 @@ public class Enemy : MonoBehaviour
         //out of view return to pool
         if (Vector2.Distance(transform.position, Vector2.zero) > GameManager.Instance.maxDistance)
         {
+            SetState(EEnemyState.IDLE);
             GameManager.Instance.ReturnToPool(this);
             return;
         }
@@ -148,7 +155,7 @@ public class Enemy : MonoBehaviour
             if (spawnTimer >= (SPAWN_TIME - shootAnimationTime) && !animator.GetBool(ANIMATOR_SHOOT_TRIGGER))
             {
                 //check spawn
-                if (!GameManager.Instance.CheckCanSpawnEnemy())
+                if (!GameManager.Instance.CheckCanSpawnEnemy() || !IsInView(transform.localPosition))
                     spawnTimer = 0;
                 else
                     animator.SetBool(ANIMATOR_SHOOT_TRIGGER, true);
@@ -207,9 +214,8 @@ public class Enemy : MonoBehaviour
    
     void OnTriggerEnter2D(Collider2D col)
     {
-        
         //Debug.Log("enemy collided with " + col.tag);
-        if (state == EEnemyState.COLD_DOWN || state == EEnemyState.NONE)
+        if (state != EEnemyState.NORMAL)
             return;
 
         if (col.tag == Player.COLLIDER_TAG_PLAYER)
@@ -226,7 +232,7 @@ public class Enemy : MonoBehaviour
 
     void OnTriggerStay2D(Collider2D col)
     {
-        if (state == EEnemyState.COLD_DOWN || state == EEnemyState.NONE || state == EEnemyState.DIE)
+        if (state != EEnemyState.NORMAL)
             return;
 
         if (col.tag == Player.COLLIDER_TAG_HAND)
