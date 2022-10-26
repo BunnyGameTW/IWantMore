@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using MoreMountains.Feedbacks;
+using MoreMountains.Tools;
 public class GameUIController : MonoBehaviour
 {
     const string COMBO_TEXT_IMAGE_NAME = "combo";
@@ -15,21 +17,30 @@ public class GameUIController : MonoBehaviour
     public GameObject hpRoot, scoreRoot, comboRoot, feverRoot;
     public Sprite hpSprite;
     public Sprite[] numberSprites;
-    public Image scoreBarImage;
+    public Image scoreBarImage, delayBarImage;
     public Image countDownImage;
     public Sprite [] countDownNumberSprites;
 
     public Canvas canvas;
+    public MMF_Player feedbackFever;
+    public MMF_Player feedbackHit;
+    public MMF_Player feedbackDie;
 
     GameObject[] gameObjectHps;
+    MMF_Feedback[] feedbackHps, feedbackDies;
+    MMF_Player feedbackCountDown;
     Image[] scoreImages, comboImages, comboBgImages;
-    Image comboTextImage, feverImage;
-
-    //TODO leaderboard
+    Image comboTextImage, feverImage;    
     
     int maxScore, prevMaxScore, offsetScore;
     float comboTime, maxComboTime;
     float feverTime, maxFeverTime;
+    float[] HEARTBEAT_RATE = {
+        0.2f, 0.5f, 1.0f
+    };
+    float hearbeatTimer;
+    int tempHp, index;
+
     static GameUIController instance;
     public static GameUIController Instance
     {
@@ -43,10 +54,15 @@ public class GameUIController : MonoBehaviour
     public void InitHp(int hp)
     {
         gameObjectHps = new GameObject[hp];
-
+        feedbackHps = new MMF_Feedback[hp];
+        feedbackDies = new MMF_Feedback[hp];
         GameObject go = hpRoot.transform.GetChild(0).gameObject;
         go.GetComponent<Image>().sprite = hpSprite;
+        
         gameObjectHps[0] = go;
+        List<MMF_Feedback> list = go.GetComponent<MMF_Player>().FeedbacksList;
+        feedbackHps[0] = list[0];
+        feedbackDies[0] = list[1];
 
         if (hpRoot.transform.childCount < hp)
         {
@@ -54,26 +70,34 @@ public class GameUIController : MonoBehaviour
             {
                 GameObject go2 = Instantiate(go, hpRoot.transform);
                 gameObjectHps[i + 1] = go2;
+                list = go2.GetComponent<MMF_Player>().FeedbacksList;
+
+                feedbackHps[i + 1] = list[0];
+                feedbackDies[i + 1] = list[1];
             }
         }
-
     }
+    public void ResetHp()
+    {
+        tempHp = 0;
+    }
+
     public void SetHp(int hp)
     {
-        for (int i = 0; i < gameObjectHps.Length; i++)
+        int offset = tempHp - hp;
+        if (offset > 0)
         {
-            if (i <= hp - 1)
-            {
-                if (!gameObjectHps[i].activeSelf)
-                    gameObjectHps[i].SetActive(true);
-            }
-            else
-            {
-                if (gameObjectHps[i].activeSelf)
-                    gameObjectHps[i].SetActive(false);
-            }
-
+            feedbackDies[hp].Play(Vector3.zero);
         }
+        else
+        {
+            for (int i = 0; i < hp - 1; i++)
+            {
+                gameObjectHps[i].transform.localScale = new Vector3(1, 1);
+            }
+        }
+
+        tempHp = hp;
     }
 
     
@@ -81,15 +105,23 @@ public class GameUIController : MonoBehaviour
     {
         prevMaxScore = _prevMaxScore;
         offsetScore = _maxScore - _prevMaxScore;//1 10 100
-        maxScore = _maxScore;        
+        //maxScore = _maxScore;        
         scoreBarImage.fillAmount = 0;
+        delayBarImage.fillAmount = 0;
+        isStartAddBar = false;
+        fAddAmount = 0;
     }
 
     public void SetScore(int score)
     {
 
         if (offsetScore != 0)
-            scoreBarImage.fillAmount = (float)((float)(score - prevMaxScore) / (float)offsetScore);
+        {//TODO
+            //scoreBarImage.fillAmount = (float)((float)(score - prevMaxScore) / (float)offsetScore);
+            delayBarImage.fillAmount = (float)((float)(score - prevMaxScore) / (float)offsetScore);
+            StartCoroutine(AddScoreBar(delayBarImage.fillAmount));
+            //scoreProgressBar.AddPercent(0.1f);
+        }
 
         for (int i = 0; i < scoreImages.Length; i++)
         {
@@ -97,6 +129,16 @@ public class GameUIController : MonoBehaviour
             score = Mathf.FloorToInt((float)score / 10.0f);
         }
     }
+
+    bool isStartAddBar = false;
+    float fAddAmount = 0; 
+    IEnumerator AddScoreBar(float fillAmount)
+    {
+        yield return new WaitForSeconds(0.3f);
+        fAddAmount = fillAmount;
+        isStartAddBar = true;
+    }
+
     public void SetCombo(int combo, float _comboTime = 0)
     {
         if (combo == 0)
@@ -132,7 +174,12 @@ public class GameUIController : MonoBehaviour
     
     public void SetFever(bool isFever, float _feverTime = 0)
     {
-        feverRoot.SetActive(isFever);       
+        feverRoot.SetActive(isFever);
+        if (isFever)
+            feedbackFever.PlayFeedbacks();
+        else
+            feedbackFever.StopFeedbacks();
+
         if (isFever)
         {
             feverImage.fillAmount = 1;
@@ -148,32 +195,21 @@ public class GameUIController : MonoBehaviour
         if (isShow != countDownImage.gameObject.activeSelf)
             countDownImage.gameObject.SetActive(isShow);
         if (isShow)
+        {
             countDownImage.sprite = countDownNumberSprites[time - 1];
+            feedbackCountDown.PlayFeedbacks();
+        }
     }
     public void Reset()
-    {        
-        SetDifficultyScore(0, 0);
+    {
+        index = 0;
+        hearbeatTimer = 0;
+        //SetDifficultyScore(0, 0);
         SetScore(0);
         SetCombo(0);
         SetFever(false);        
     }
 
-    public void SetState(EGameState state)
-    {
-        switch (state)
-        {
-            case EGameState.TITLE:
-                break;
-            case EGameState.READY:
-
-                break;
-            case EGameState.GAME:
-                break;
-            case EGameState.END:
-                break;
-        }
-    }
- 
     void Awake()
     {
         Debug.Log("game ui controller");
@@ -208,8 +244,12 @@ public class GameUIController : MonoBehaviour
         }
 
         feverImage = feverRoot.transform.Find(FEVER_TEXT_IMAGE_NAME).GetComponent<Image>();
+        feedbackCountDown = countDownImage.GetComponent<MMF_Player>();
+        feedbackCountDown.Initialization();
+        scoreProgressBar = scoreBarImage.GetComponent<MMProgressBar>();
     }
     // Update is called once per frame
+    MMProgressBar scoreProgressBar;
     void Update()
     {
         if (comboTime > 0)
@@ -240,6 +280,39 @@ public class GameUIController : MonoBehaviour
             }
         }
 
+        if (tempHp > 0)
+        {
+            hearbeatTimer += Time.deltaTime;
+            
+            if (hearbeatTimer >= HEARTBEAT_RATE[tempHp - 1])
+            {
+                if (index <= tempHp - 1)
+                    feedbackHps[index].Play(Vector3.zero);
+                index++;
+                if (index >= feedbackHps.Length)
+                    index = 0;
+                hearbeatTimer = 0;
+            }
+        }
+
+        if (isStartAddBar)
+        {
+            scoreBarImage.fillAmount += Time.deltaTime * fAddAmount;//1
+            if (scoreBarImage.fillAmount >= fAddAmount)
+            {
+                scoreBarImage.fillAmount = fAddAmount;
+                isStartAddBar = false;
+                fAddAmount = 0;
+
+                //TODO tysm!
+                if (scoreBarImage.fillAmount == 1)
+                {
+                    isStartAddBar = true;
+                    fAddAmount = delayBarImage.fillAmount;
+                    scoreBarImage.fillAmount = 0;
+                }
+            }
+        }
     }
   
 }

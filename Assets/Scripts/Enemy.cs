@@ -40,7 +40,7 @@ public class Enemy : MonoBehaviour
     const string ANIMATION_SHOOT_NAME = "EnemyShoot";
     
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         if (kind == EEnemyKind.SPAWN)
         {
@@ -56,7 +56,10 @@ public class Enemy : MonoBehaviour
         }
         feedbackPlayer = GetComponent<MMF_Player>();
         feedbacks = feedbackPlayer.FeedbacksList;
-
+        for (int i = 0; i < feedbacks.Count; i++)
+        {
+            feedbacks[i].Initialization(feedbackPlayer);
+        }
         Reset();      
     }
 

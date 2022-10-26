@@ -218,7 +218,7 @@ public class Player : MonoBehaviour
         nowHp--;
         GameUIController.Instance.SetHp(nowHp);
         animator.SetBool(ANIMATOR_IS_HIT_NAME, true);
-        if (nowHp <= 0)//TODO pause a second or sth
+        if (nowHp <= 0)
         {
             GameManager.Instance.OnPlayerDie();
         }

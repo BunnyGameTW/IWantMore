@@ -32,8 +32,8 @@ public class GameManager : MonoBehaviour
     const int MAX_SCORE = 9999999;
     const int MAX_ENEMY_COUNT = 200;
     const int UNLOCK_SECRET_SCORE = 10000;//TODO
-    const int INITIAL_ENEMY_COUNT = 0;
-    const int EXPAND_POOL_COUNT = 1;
+    const int INITIAL_ENEMY_COUNT = 30;
+    const int EXPAND_POOL_COUNT = 10;
     const int INITIAL_PARTICLE_COUNT = 10;
 
     const int COUNT_DOWN_TIME = 4;
@@ -332,6 +332,7 @@ public class GameManager : MonoBehaviour
             case EGameState.GAME:
                 break;
             case EGameState.END:
+                GameUIController.Instance.ResetHp();
                 break;
             case EGameState.SCORE:
                 AudioManager.Instance.PlaySound(EAudioClipKind.SCORE, 0.5f);
@@ -342,6 +343,7 @@ public class GameManager : MonoBehaviour
                     PlayerPrefs.SetString(SAVE_NAME, highScore.ToString());
                 }
                 EndUIController.Instance.SetScore(score, isHighScore);
+                EndUIController.Instance.SetCanClick(false);
                 if (score > UNLOCK_SECRET_SCORE && !hasUnlockSecret)
                 {
                     hasUnlockSecret = true;
@@ -375,6 +377,8 @@ public class GameManager : MonoBehaviour
                 break;
             case EGameState.END:
                 AudioManager.Instance.PlaySound(EAudioClipKind.END, 0.5f);
+                GameUIController.Instance.feedbackDie.PlayFeedbacks();
+
                 Time.timeScale = SLOW_MOTION_TIME_SCALE;
                 endTimer = SLOW_MOTION_TIME;
                 player.SetEnd();
@@ -390,6 +394,7 @@ public class GameManager : MonoBehaviour
                 }
                 break;
             case EGameState.SCORE:
+                EndUIController.Instance.SetCanClick(true);
                 break;
         }
     }
@@ -412,6 +417,7 @@ public class GameManager : MonoBehaviour
     }
     public void PlayerHurt()
     {
+        GameUIController.Instance.feedbackHit.PlayFeedbacks();
         player.SetHit();
     }
     public void OnPlayerDie()
@@ -498,7 +504,7 @@ public class GameManager : MonoBehaviour
                 SetStateStart(nextState);
                 gameObjectRoots[state].SetActive(false);
                 gameObjectRoots[nextState].SetActive(true);
-                Debug.Log("active root");
+                Debug.Log("active root->" + state + ", " + nextState);
 
                 transitionAni[TRANISITION_NAME].speed = -1;
                 transitionAni[TRANISITION_NAME].time = transitionAni[TRANISITION_NAME].length;

@@ -321,6 +321,15 @@ MonoBehaviour:
               inWeight: 0
               outWeight: 0
             - serializedVersion: 3
+              time: 0.76926494
+              value: 1.1747124
+              inSlope: 0.62813663
+              outSlope: 0.62813663
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0.33333334
+              outWeight: 0.33333334
+            - serializedVersion: 3
               time: 1
               value: 1
               inSlope: 0
@@ -349,6 +358,15 @@ MonoBehaviour:
               weightedMode: 0
               inWeight: 0
               outWeight: 0
+            - serializedVersion: 3
+              time: 0.7993372
+              value: 1.1710633
+              inSlope: 0.67632556
+              outSlope: 0.67632556
+              tangentMode: 0
+              weightedMode: 0
+              inWeight: 0.33333334
+              outWeight: 0.33333334
             - serializedVersion: 3
               time: 1
               value: 1
@@ -465,7 +483,7 @@ MonoBehaviour:
         Offset: 0
         AnimateX: 1
         AnimateScaleTweenX:
-          MMTweenDefinitionType: 0
+          MMTweenDefinitionType: 1
           MMTweenCurve: 5
           Curve:
             serializedVersion: 2
@@ -480,17 +498,17 @@ MonoBehaviour:
               inWeight: 0
               outWeight: 0
             - serializedVersion: 3
-              time: 0.3
-              value: 1.5
-              inSlope: 0
-              outSlope: 0
+              time: 0.4079587
+              value: -0.27755958
+              inSlope: 1.0984212
+              outSlope: 1.0984212
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0
-              outWeight: 0
+              inWeight: 0.33333334
+              outWeight: 0.33333334
             - serializedVersion: 3
               time: 1
-              value: 0
+              value: 1
               inSlope: 0
               outSlope: 0
               tangentMode: 0
@@ -503,7 +521,7 @@ MonoBehaviour:
           Initialized: 0
         AnimateY: 1
         AnimateScaleTweenY:
-          MMTweenDefinitionType: 0
+          MMTweenDefinitionType: 1
           MMTweenCurve: 5
           Curve:
             serializedVersion: 2
@@ -518,17 +536,17 @@ MonoBehaviour:
               inWeight: 0
               outWeight: 0
             - serializedVersion: 3
-              time: 0.3
-              value: 1.5
-              inSlope: 0
-              outSlope: 0
+              time: 0.36090642
+              value: -0.25698745
+              inSlope: 1.0547014
+              outSlope: 1.0547014
               tangentMode: 0
               weightedMode: 0
-              inWeight: 0
-              outWeight: 0
+              inWeight: 0.33333334
+              outWeight: 0.33333334
             - serializedVersion: 3
               time: 1
-              value: 0
+              value: 1
               inSlope: 0
               outSlope: 0
               tangentMode: 0

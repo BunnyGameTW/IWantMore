@@ -18,6 +18,7 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     Stack<Transform> pool = new Stack<Transform>();
     LoopScrollRect scrollRect;
     LootLockerLeaderboardMember[] leaderboardDatas;
+    bool canClick;
 
     const string POP_IN_ANIMATION_NAME = "PopInOut";
     const string SCALE_IN_ANIMATION_NAME = "ScaleInOut";
@@ -80,7 +81,11 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         secretAni[POP_IN_ANIMATION_NAME].time = 0;
         secretAni.Play(POP_IN_ANIMATION_NAME);
     }
-
+    
+    public void SetCanClick(bool _bool)
+    {
+        canClick = _bool;
+    }
     public void SetScore(int score, bool showNewRecord = false)
     {
         for (int i = 0; i < scoreImages.Length; i++)
@@ -94,6 +99,9 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     }
     public void ButtonEvent(string name)
     {
+        if (!canClick)
+            return;
+
         AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON);
 
         switch (name)

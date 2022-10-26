@@ -4,7 +4,7 @@ using UnityEngine;
 using LootLocker.Requests;
 public class LeaderboardController : MonoBehaviour
 {
-    const int leaderboardID = 8078;
+    const int leaderboardID = 8217;
     const int MAX_RANKING_NUMBER = 100;
 
     int memberId = 0;
