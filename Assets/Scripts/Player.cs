@@ -189,6 +189,7 @@ public class Player : MonoBehaviour
                 speed = SPEED;
                 maxTurnSpeed = TURN_SPEED;
                 smoothTime = SMOOTH_TIME;
+                AudioManager.Instance.PlaySound(EAudioClipKind.FEVER_END);
             }
         }
     }

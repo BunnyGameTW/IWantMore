@@ -13,8 +13,9 @@ public enum EAudioClipKind
     BUTTON_NEXT = 6,
     SHOOT = 7,
     HURT = 8,
-    HIT = 9,
-    TRANSITION = 10,
+    FEVER_END = 9,
+    HIT = 10,
+    TRANSITION = 11,
 }
 
 public class AudioManager : MonoBehaviour
@@ -43,12 +44,11 @@ public class AudioManager : MonoBehaviour
     List<AudioSource> pool;
     List<int> hitClipsList;
     public AudioMixerGroup mixerGroup;
-    //public AudioMixer mixer;
+
     // Start is called before the first frame update
     void Awake()
     {
         instance = this;
-        //mixerGroup = mixer.FindMatchingGroups("Master")[0];
 
         map = new Dictionary<EAudioClipKind, AudioClip>(audioClips.Length);
         for (int i = 0; i < audioClips.Length; i++)

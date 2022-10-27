@@ -151,12 +151,6 @@ public class GameManager : MonoBehaviour
                 LoginUIController.Instance.ShowLeaderBoard(respoose.rank);
             });
         }
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            //TODO
-            //MMF_Player p = FindObjectOfType<MMF_Player>();            
-            //p.PlayFeedbacks();
-        }
 
     }
 
@@ -167,12 +161,12 @@ public class GameManager : MonoBehaviour
         //spawn enemy
         if (state == EGameState.GAME)
         {
-            //spawnTimer += Time.deltaTime;
-            //if (spawnTimer >= spawnTime)
-            //{
-            //    spawnTimer = 0;
-            //    SpawnEnemy(GetRandomEnemyCount(difficulty));
-            //}
+            spawnTimer += Time.deltaTime;
+            if (spawnTimer >= spawnTime)
+            {
+                spawnTimer = 0;
+                SpawnEnemy(GetRandomEnemyCount(difficulty));
+            }
 
             if (comboTimer > 0)
             {
@@ -317,11 +311,11 @@ public class GameManager : MonoBehaviour
                     LoginUIController.Instance.SetPlayed();
                     if (highScore > 0)
                         LoginUIController.Instance.SetFull();
-                }
-                    
+                }                    
                 LoginUIController.Instance.SetHighScore(highScore);
                 if (hasUnlockSecret)
                     LoginUIController.Instance.SetUnlockSecret();
+                LoginUIController.Instance.SetCanClick(false);
                 break;
             case EGameState.READY:
                 player.Reset();
@@ -367,6 +361,7 @@ public class GameManager : MonoBehaviour
                 LoginUIController.Instance.SetHighScore(highScore);
                 if (hasUnlockSecret)
                     LoginUIController.Instance.SetUnlockSecret();
+                LoginUIController.Instance.SetCanClick(true);
                 break;
             case EGameState.READY:
                 AudioManager.Instance.PlaySound(EAudioClipKind.COUNTDOWN, 0.3f);
@@ -443,7 +438,7 @@ public class GameManager : MonoBehaviour
         //check score limit
         if (score >= MAX_SCORE)
             score = MAX_SCORE;
-        GameUIController.Instance.SetScore(score);
+        
 
         AudioManager.Instance.PlayHit();
 
@@ -482,6 +477,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+        GameUIController.Instance.SetScore(score);
     }
 
     void AnimationEvent(GameObject go)//TODO

@@ -107,9 +107,11 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         switch (name)
         {
             case "Retry":
+                SetCanClick(false);
                 GameManager.Instance.ChangeState(EGameState.READY);
                 break;
             case "Home":
+                SetCanClick(false);
                 GameManager.Instance.ChangeState(EGameState.TITLE);
                 break;
             case "Upload":
@@ -120,7 +122,9 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 }
                 else
                 {
+                    SetCanClick(false);
                     GameManager.Instance.SubmitScore((response) => {
+                        SetCanClick(true);
                         ShowLeaderBoard(response.rank);
                     });
                 }
@@ -135,11 +139,12 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 leaderboardAni[SCALE_IN_ANIMATION_NAME].time = leaderboardAni[SCALE_IN_ANIMATION_NAME].length;
                 leaderboardAni.Play(SCALE_IN_ANIMATION_NAME);
                 break;
-            case "Name"://TODO check faul character?
-                Debug.Log("inputFieldName.text->" + inputFieldName.text);
+            case "Name":
                 GameManager.Instance.SetPlayerName(inputFieldName.text);
                 gameObjectName.SetActive(false);
+                SetCanClick(false);
                 GameManager.Instance.SubmitScore((response) => {
+                    SetCanClick(true);
                     if (response.rank > MAX_RANKING_NUMBER)
                         response.rank = MAX_RANKING_NUMBER;
                     ShowLeaderBoard(response.rank);

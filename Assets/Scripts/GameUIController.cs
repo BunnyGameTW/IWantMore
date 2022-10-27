@@ -13,7 +13,14 @@ public class GameUIController : MonoBehaviour
     const string FEVER_TEXT_IMAGE_NAME = "fever";
     const float COMBO_TEXT_WIDTH_RATIO = 0.55f;
     const float COMBO_DIGIT_RATIO = 0.15f;
-   
+    const float SCORE_BAR_DELAY_TIME = 0.3f;
+    enum EScoreBarState
+    {
+        CHANGE_DIFFICULTY = 1,
+        WAIT = 2,
+        DONE = 3,
+    }
+
     public GameObject hpRoot, scoreRoot, comboRoot, feverRoot;
     public Sprite hpSprite;
     public Sprite[] numberSprites;
@@ -25,14 +32,17 @@ public class GameUIController : MonoBehaviour
     public MMF_Player feedbackFever;
     public MMF_Player feedbackHit;
     public MMF_Player feedbackDie;
+    public MMF_Player feedbackCombo;
+    public MMF_Player feedbackScore;
 
     GameObject[] gameObjectHps;
     MMF_Feedback[] feedbackHps, feedbackDies;
     MMF_Player feedbackCountDown;
+    MMF_Player [] feedbackScoreDigits;
     Image[] scoreImages, comboImages, comboBgImages;
     Image comboTextImage, feverImage;    
     
-    int maxScore, prevMaxScore, offsetScore;
+    int prevMaxScore, offsetScore;
     float comboTime, maxComboTime;
     float feverTime, maxFeverTime;
     float[] HEARTBEAT_RATE = {
@@ -40,6 +50,9 @@ public class GameUIController : MonoBehaviour
     };
     float hearbeatTimer;
     int tempHp, index;
+    EScoreBarState barState;
+    bool isStartAddBar = false;
+    float fAddAmount = 0;
 
     static GameUIController instance;
     public static GameUIController Instance
@@ -99,42 +112,42 @@ public class GameUIController : MonoBehaviour
 
         tempHp = hp;
     }
-
-    
+   
     public void SetDifficultyScore(int _prevMaxScore, int _maxScore)
     {
         prevMaxScore = _prevMaxScore;
         offsetScore = _maxScore - _prevMaxScore;//1 10 100
-        //maxScore = _maxScore;        
-        scoreBarImage.fillAmount = 0;
-        delayBarImage.fillAmount = 0;
-        isStartAddBar = false;
-        fAddAmount = 0;
+
+        if (barState == EScoreBarState.DONE && _prevMaxScore != 0)
+            barState = EScoreBarState.CHANGE_DIFFICULTY;
     }
 
     public void SetScore(int score)
     {
 
         if (offsetScore != 0)
-        {//TODO
-            //scoreBarImage.fillAmount = (float)((float)(score - prevMaxScore) / (float)offsetScore);
-            delayBarImage.fillAmount = (float)((float)(score - prevMaxScore) / (float)offsetScore);
-            StartCoroutine(AddScoreBar(delayBarImage.fillAmount));
-            //scoreProgressBar.AddPercent(0.1f);
+        {
+            float v = (float)((float)(score - prevMaxScore) / (float)offsetScore);
+            delayBarImage.fillAmount = v;
+            StartCoroutine(AddScoreBar(v));
         }
 
+        feedbackScore.PlayFeedbacks();
         for (int i = 0; i < scoreImages.Length; i++)
         {
-            scoreImages[i].sprite = numberSprites[score % 10];
+            if (scoreImages[i].sprite != numberSprites[score % 10])
+            {
+                scoreImages[i].sprite = numberSprites[score % 10];
+                feedbackScoreDigits[i].PlayFeedbacks();
+            }
             score = Mathf.FloorToInt((float)score / 10.0f);
         }
     }
 
-    bool isStartAddBar = false;
-    float fAddAmount = 0; 
+
     IEnumerator AddScoreBar(float fillAmount)
     {
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(SCORE_BAR_DELAY_TIME);
         fAddAmount = fillAmount;
         isStartAddBar = true;
     }
@@ -149,7 +162,8 @@ public class GameUIController : MonoBehaviour
             }
         }
         else
-        {            
+        {
+            feedbackCombo.PlayFeedbacks();
             for (int i = 0; i < comboImages.Length; i++)
             {
                 int v = combo % 10;
@@ -204,7 +218,11 @@ public class GameUIController : MonoBehaviour
     {
         index = 0;
         hearbeatTimer = 0;
-        //SetDifficultyScore(0, 0);
+        scoreBarImage.fillAmount = 0;
+        delayBarImage.fillAmount = 0;
+        isStartAddBar = false;
+        fAddAmount = 0;
+        barState = EScoreBarState.DONE;
         SetScore(0);
         SetCombo(0);
         SetFever(false);        
@@ -216,10 +234,12 @@ public class GameUIController : MonoBehaviour
         instance = this;
 
         scoreImages = new Image[scoreRoot.transform.childCount];
+        feedbackScoreDigits = new MMF_Player[scoreRoot.transform.childCount];
         int j = 0;
         for (int i = scoreRoot.transform.childCount; i > 0; i--)
         {
             scoreImages[j] = scoreRoot.transform.GetChild(i - 1).GetComponent<Image>();
+            feedbackScoreDigits[j] = scoreImages[j].GetComponentInChildren<MMF_Player>();
             j++;
         }
 
@@ -246,10 +266,9 @@ public class GameUIController : MonoBehaviour
         feverImage = feverRoot.transform.Find(FEVER_TEXT_IMAGE_NAME).GetComponent<Image>();
         feedbackCountDown = countDownImage.GetComponent<MMF_Player>();
         feedbackCountDown.Initialization();
-        scoreProgressBar = scoreBarImage.GetComponent<MMProgressBar>();
     }
     // Update is called once per frame
-    MMProgressBar scoreProgressBar;
+    
     void Update()
     {
         if (comboTime > 0)
@@ -297,19 +316,42 @@ public class GameUIController : MonoBehaviour
 
         if (isStartAddBar)
         {
-            scoreBarImage.fillAmount += Time.deltaTime * fAddAmount;//1
+            //scoreBarImage.fillAmount += Time.deltaTime * fAddAmount(0~1;
+            scoreBarImage.fillAmount += Time.deltaTime;
             if (scoreBarImage.fillAmount >= fAddAmount)
             {
-                scoreBarImage.fillAmount = fAddAmount;
-                isStartAddBar = false;
-                fAddAmount = 0;
-
-                //TODO tysm!
-                if (scoreBarImage.fillAmount == 1)
+                if (barState == EScoreBarState.CHANGE_DIFFICULTY)
                 {
-                    isStartAddBar = true;
-                    fAddAmount = delayBarImage.fillAmount;
+                    if (scoreBarImage.fillAmount == 1)
+                    {
+                        if (delayBarImage.fillAmount == 1)
+                        {
+                            isStartAddBar = false;
+                        }
+                        else
+                        {
+                            fAddAmount = delayBarImage.fillAmount;
+                            scoreBarImage.fillAmount = 0;
+                        }
+                        barState = EScoreBarState.DONE;
+                    }
+                    else
+                    {
+                        barState = EScoreBarState.WAIT;                    
+                        fAddAmount = 1.0f;
+                    }
+                }
+                else if (barState == EScoreBarState.WAIT)
+                {
                     scoreBarImage.fillAmount = 0;
+                    fAddAmount = delayBarImage.fillAmount;
+                    barState = EScoreBarState.DONE;
+                }
+                else
+                {
+                    scoreBarImage.fillAmount = fAddAmount;
+                    isStartAddBar = false;
+                    fAddAmount = 0;
                 }
             }
         }

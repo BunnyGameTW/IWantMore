@@ -26,7 +26,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     Stack<Transform> pool = new Stack<Transform>();
     LoopScrollRect scrollRect;
     LootLockerLeaderboardMember[] leaderboardDatas;
-
+    bool canClick;
     static LoginUIController instance;
 
     public static LoginUIController Instance
@@ -40,11 +40,15 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     
     public void ButtonEvent(string name)
     {
+        if (!canClick)
+            return;
+
         AudioManager.Instance.PlaySound(EAudioClipKind.BUTTON);
 
         switch (name)
         {
             case "Start":
+                SetCanClick(false);
                 GameManager.Instance.ChangeState(EGameState.READY);
                 break;
             case "Secret":
@@ -104,7 +108,9 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         bool needShow = !gameObjectLeaderboard.activeSelf;
         if (needShow)
             gameObjectLeaderboard.SetActive(true);
+        SetCanClick(false);
         GameManager.Instance.GetLeaderBoardDatas((LootLockerLeaderboardMember[] datas) => {
+            SetCanClick(true);
             if (needShow)
             {
                 leaderboardAni[SCALE_IN_ANIMATION_NAME].speed = 1;
@@ -215,9 +221,14 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         gameObjectHow.SetActive(false);
         gameObjectCredit.SetActive(false);
         gameObjectLeaderboard.SetActive(false);
-    
+        SetCanClick(true);
     }
     
+    public void SetCanClick(bool _bool)
+    {
+        canClick = _bool;
+    }
+
     void Start()
     {
         scrollRect = gameObjectLeaderboard.GetComponentInChildren<LoopScrollRect>();
