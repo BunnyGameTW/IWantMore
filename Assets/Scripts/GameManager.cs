@@ -90,14 +90,12 @@ public class GameManager : MonoBehaviour
     List<GameObject> particlePool, particleInUsePool;
     List<Vector3> enemyPositionList;
     LeaderboardController leaderboardController;
-
+    public bool isMovingStateForMobile { get; set; }
     #region life cycle
     void Awake()
     {
         Debug.Log("game manager");
-        instance = this;
-        
-        //player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        instance = this;        
 
         string data = PlayerPrefs.GetString(SAVE_NAME);
         if (data != "")
@@ -131,6 +129,22 @@ public class GameManager : MonoBehaviour
         gameObjectRoots = new Dictionary<EGameState, GameObject>();
         SceneManager.sceneLoaded += OnSceneLoaded;
         leaderboardController = GetComponent<LeaderboardController>();
+
+#if !UNITY_EDITOR && UNITY_WEBGL
+        if (IsMobile())
+        {            
+            isMovingStateForMobile = false;
+            GameUIController.Instance.ShowGameObjectChangeState();
+        }
+#endif
+    }
+    public bool CheckIfMobile()
+    {
+        bool isMobile = false;
+#if !UNITY_EDITOR && UNITY_WEBGL
+        isMobile = IsMobile();
+#endif
+        return isMobile;
     }
 
     void MyDebug()
@@ -156,7 +170,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        MyDebug();
+       // MyDebug();
 
         //spawn enemy
         if (state == EGameState.GAME)
@@ -194,9 +208,9 @@ public class GameManager : MonoBehaviour
         }
 
     }
-    #endregion
+#endregion
    
-    #region public
+#region public
     public void GetLeaderBoardDatas(System.Action<LootLockerLeaderboardMember[]> callback)
     {
         leaderboardController.ShowScores((LootLockerLeaderboardMember[] members) => {
@@ -286,7 +300,18 @@ public class GameManager : MonoBehaviour
         }
             
     }
-   
+
+#if !UNITY_EDITOR && UNITY_WEBGL
+    [System.Runtime.InteropServices.DllImport("__Internal")]
+    private static extern bool IsMobile();
+#endif
+
+    public void ChangeMoveState()
+    {
+        isMovingStateForMobile = !isMovingStateForMobile;
+        GameUIController.Instance.SetMoveState(isMovingStateForMobile);
+    }
+
     public void ChangeState(EGameState _state)
     {
         if (state == _state)
@@ -393,9 +418,9 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
-    #endregion
+#endregion
 
-    #region event
+#region event
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         gameObjectRoots.Add(EGameState.TITLE, roots[0]);
@@ -520,9 +545,9 @@ public class GameManager : MonoBehaviour
 
         }
     }
-    #endregion
+#endregion
 
-    #region private
+#region private
     void Reset()
     {
         score = 0;
@@ -649,5 +674,5 @@ public class GameManager : MonoBehaviour
         }
         GameUIController.Instance.SetCountDown(countDownCounter);
     }
-    #endregion
+#endregion
 }

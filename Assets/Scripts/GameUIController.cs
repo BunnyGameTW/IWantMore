@@ -21,12 +21,13 @@ public class GameUIController : MonoBehaviour
         DONE = 3,
     }
 
-    public GameObject hpRoot, scoreRoot, comboRoot, feverRoot;
+    public GameObject hpRoot, scoreRoot, comboRoot, feverRoot, gameObjectChangeState;
     public Sprite hpSprite;
     public Sprite[] numberSprites;
     public Image scoreBarImage, delayBarImage;
-    public Image countDownImage;
+    public Image countDownImage, moveStateImage;
     public Sprite [] countDownNumberSprites;
+    public Sprite[] moveStateSprites;
 
     public Canvas canvas;
     public MMF_Player feedbackFever;
@@ -40,8 +41,9 @@ public class GameUIController : MonoBehaviour
     MMF_Player feedbackCountDown;
     MMF_Player [] feedbackScoreDigits;
     Image[] scoreImages, comboImages, comboBgImages;
-    Image comboTextImage, feverImage;    
-    
+    Image comboTextImage, feverImage;
+    RectTransform rectChangeState;
+
     int prevMaxScore, offsetScore;
     float comboTime, maxComboTime;
     float feverTime, maxFeverTime;
@@ -62,6 +64,15 @@ public class GameUIController : MonoBehaviour
             //if (instance == null)
             return instance;
         }
+    }
+
+    public bool CheckIsInChangeStateRect(Vector3 v)
+    {
+        return RectTransformUtility.RectangleContainsScreenPoint(rectChangeState, v);
+    }
+    public void ShowGameObjectChangeState()
+    {
+        gameObjectChangeState.SetActive(true);
     }
 
     public void InitHp(int hp)
@@ -228,6 +239,15 @@ public class GameUIController : MonoBehaviour
         SetFever(false);        
     }
 
+    public void ChangeState()
+    {
+        GameManager.Instance.ChangeMoveState();
+    }
+    public void SetMoveState(bool _bool)
+    {
+        moveStateImage.sprite = moveStateSprites[_bool ? 0 : 1];
+    }
+
     void Awake()
     {
         Debug.Log("game ui controller");
@@ -266,6 +286,8 @@ public class GameUIController : MonoBehaviour
         feverImage = feverRoot.transform.Find(FEVER_TEXT_IMAGE_NAME).GetComponent<Image>();
         feedbackCountDown = countDownImage.GetComponent<MMF_Player>();
         feedbackCountDown.Initialization();
+
+        rectChangeState = gameObjectChangeState.GetComponent<RectTransform>();
     }
     // Update is called once per frame
     

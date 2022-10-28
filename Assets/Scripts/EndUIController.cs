@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,6 +24,15 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     const string POP_IN_ANIMATION_NAME = "PopInOut";
     const string SCALE_IN_ANIMATION_NAME = "ScaleInOut";
     const int MAX_RANKING_NUMBER = 100;
+    string[] randomNames =
+   {
+        "救命WebGL好多坑",
+        "MobileMan",
+        "ILoveAsa",
+        "こんばんは",
+        "火神的受保人",
+        "早薩午薩晚薩好"
+    };
 
     static EndUIController instance;
     public static EndUIController Instance
@@ -99,6 +108,15 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         if (gameObjectNewRecord.activeSelf != showNewRecord)
             gameObjectNewRecord.SetActive(showNewRecord);
     }
+
+   
+
+    string GetRandomName()
+    {
+        int v = Random.Range(0, randomNames.Length);
+        return randomNames[v];
+    }
+
     public void ButtonEvent(string name)
     {
         if (!canClick)
@@ -121,6 +139,10 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 if (_name == "")
                 {
                     gameObjectName.SetActive(true);
+                    if (GameManager.Instance.CheckIfMobile())
+                    {
+                        inputFieldName.text = GetRandomName();
+                    }
                 }
                 else
                 {

@@ -133,13 +133,29 @@ public class Player : MonoBehaviour
         if (state == EPlayerState.STOP)
             return;
 
-        if (Input.GetMouseButtonDown(0))
+#if !UNITY_EDITOR && UNITY_WEBGL
+        bool isMoveState = true;
+        if (GameManager.Instance.CheckIfMobile() && (!GameManager.Instance.isMovingStateForMobile || 
+        GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition)))
+            isMoveState = false;
+        
+        if (Input.GetMouseButtonDown(0) && isMoveState)
         {
             SetIsMoving(true);            
         }
+        else if (Input.GetMouseButtonUp(0) && isMoveState)
+            SetIsMoving(false);
+#else
+
+        if (Input.GetMouseButtonDown(0))
+        {
+             SetIsMoving(true);
+
+        }
         else if (Input.GetMouseButtonUp(0))
             SetIsMoving(false);
-            
+#endif
+
     }
 
     // Update is called once per frame

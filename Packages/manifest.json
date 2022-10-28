@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.gigacee.checkifmobileforunitywebgl": "https://github.com/gigacee/CheckIfMobileForUnityWebGL.git?path=Assets/Plugins/CheckIfMobileForUnityWebGL",
     "com.lootlocker.lootlockersdk": "https://github.com/LootLocker/unity-sdk.git",
     "com.unity.2d.animation": "7.0.8",
     "com.unity.2d.psdimporter": "6.0.6",
