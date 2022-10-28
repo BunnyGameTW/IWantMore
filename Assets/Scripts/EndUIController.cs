@@ -9,12 +9,13 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     public Sprite[] numberSprites;
     public GameObject gameObjectNewRecord;
     public GameObject scoreRoot;
-    public GameObject gameObjectSecret, gameObjectLeaderboard, gameObjectName, gameObjectNoData;
+    public GameObject gameObjectSecret, gameObjectLeaderboard, gameObjectName, gameObjectNoData, gameObjectAlert;
+    public GameObject gameObjectLoading;
     public InputField inputFieldName;
     public GameObject scrollItem;
 
     Image[] scoreImages;
-    Animation secretAni, leaderboardAni;
+    Animation secretAni, leaderboardAni, alertAni;
     Stack<Transform> pool = new Stack<Transform>();
     LoopScrollRect scrollRect;
     LootLockerLeaderboardMember[] leaderboardDatas;
@@ -56,6 +57,7 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         gameObjectLeaderboard.GetComponent<AnimationEventListener>().sender += AnimationEvent;
         secretAni = gameObjectSecret.GetComponent<Animation>();
         leaderboardAni = gameObjectLeaderboard.GetComponent<Animation>();
+        alertAni = gameObjectAlert.GetComponent<Animation>();
         gameObjectSecret.SetActive(false);
         gameObjectLeaderboard.SetActive(false);
         gameObjectName.SetActive(false);
@@ -123,8 +125,8 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 else
                 {
                     SetCanClick(false);
-                    GameManager.Instance.SubmitScore((response) => {
-                        SetCanClick(true);
+                    gameObjectLoading.SetActive(true);
+                    GameManager.Instance.SubmitScore((response) => {                        
                         ShowLeaderBoard(response.rank);
                     });
                 }
@@ -140,15 +142,24 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 leaderboardAni.Play(SCALE_IN_ANIMATION_NAME);
                 break;
             case "Name":
-                GameManager.Instance.SetPlayerName(inputFieldName.text);
-                gameObjectName.SetActive(false);
-                SetCanClick(false);
-                GameManager.Instance.SubmitScore((response) => {
-                    SetCanClick(true);
-                    if (response.rank > MAX_RANKING_NUMBER)
-                        response.rank = MAX_RANKING_NUMBER;
-                    ShowLeaderBoard(response.rank);
-                });
+                if (inputFieldName.text != "")
+                {
+                    GameManager.Instance.SetPlayerName(inputFieldName.text);
+                    gameObjectName.SetActive(false);
+                    gameObjectLoading.SetActive(true);
+                    SetCanClick(false);
+                    GameManager.Instance.SubmitScore((response) =>
+                    {                        
+                        if (response.rank > MAX_RANKING_NUMBER)
+                            response.rank = MAX_RANKING_NUMBER;
+                        ShowLeaderBoard(response.rank);
+                    });
+                }
+                else
+                {
+                    gameObjectAlert.SetActive(true);
+                    alertAni.Play();
+                }
                 break;
         }
     }
@@ -159,7 +170,10 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         if (needShow)
             gameObjectLeaderboard.SetActive(true);
 
+        
         GameManager.Instance.GetLeaderBoardDatas((LootLockerLeaderboardMember[] datas) => {
+            gameObjectLoading.SetActive(false);
+            SetCanClick(true);
             if (needShow)
             {
                 leaderboardAni[SCALE_IN_ANIMATION_NAME].speed = 1;

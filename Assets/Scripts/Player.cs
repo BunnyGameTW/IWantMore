@@ -46,7 +46,7 @@ public class Player : MonoBehaviour
     const float COLD_DOWN_TIME = 1.0f;
 
     const float FEVER_TIME = 5.0f;
-    const float SPEED_UP_RATIO = 2.0f;
+    const float SPEED_UP_RATIO = 4.0f;
     const float TURN_SPEED = 10000;
     const float SMOOTH_TIME = 0.001f;
     const float SMOOTH_RATIO = 100;
@@ -145,7 +145,20 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 inputPosition = Input.mousePosition;
+        //Debug.Log("inputPosition->" + inputPosition);
+
+        if (inputPosition.x <= 0)
+            inputPosition.x = 0;
+        else if (inputPosition.x > Screen.width)
+            inputPosition.x = Screen.width;
+        if (inputPosition.y <= 0)
+            inputPosition.y = 0;
+        else if (inputPosition.y > Screen.height)
+            inputPosition.y = Screen.height;
+
+
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(inputPosition);
         Vector3 direction = GetMouseDirection(mousePosition);
         UpdateView(direction, mousePosition);//hand rotation & length
         
@@ -209,8 +222,7 @@ public class Player : MonoBehaviour
     public void SetEnd()
     {
         SetState(EPlayerState.STOP);
-        isMoving = false;
-        //TODO die animation?
+        isMoving = false;        
         animator.SetBool(ANIMATOR_IS_FEVER_NAME, true);
     }   
     
@@ -239,7 +251,7 @@ public class Player : MonoBehaviour
         bodyCol.tag = COLLIDER_TAG_HAND;        
         speed = SPEED * SPEED_UP_RATIO;
         maxTurnSpeed = TURN_SPEED * SPEED_UP_RATIO;
-        smoothTime = SMOOTH_TIME / SMOOTH_RATIO;
+        //smoothTime = SMOOTH_TIME / SMOOTH_RATIO;
         animator.SetBool(ANIMATOR_IS_FEVER_NAME, true);
         GameUIController.Instance.SetFever(true, feverTimer);
         SetScale(FEVER_SCALE);

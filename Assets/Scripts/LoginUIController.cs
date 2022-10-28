@@ -12,7 +12,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     public Sprite fatAsa, plate, kingAsa;
     public GameObject gameObjectHighScore, gameObjectCream, gameObjectSecret, buttonSecret;
     public GameObject gameObjectHow, gameObjectCredit, gameObjectNext, gameObjectPrev, gameObjectLeaderboard;
-    public GameObject gameObjectNoData;
+    public GameObject gameObjectNoData, gameObjectLoading;
     public SpriteRenderer spriteRendererCake, spriteRendererAsa;
     public Sprite[] numberSprites;
     public Transform platePosition;
@@ -109,8 +109,10 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         if (needShow)
             gameObjectLeaderboard.SetActive(true);
         SetCanClick(false);
+        gameObjectLoading.SetActive(true);
         GameManager.Instance.GetLeaderBoardDatas((LootLockerLeaderboardMember[] datas) => {
             SetCanClick(true);
+            gameObjectLoading.SetActive(false);
             if (needShow)
             {
                 leaderboardAni[SCALE_IN_ANIMATION_NAME].speed = 1;
