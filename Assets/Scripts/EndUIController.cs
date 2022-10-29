@@ -26,7 +26,6 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     const int MAX_RANKING_NUMBER = 100;
     string[] randomNames =
    {
-        "救命WebGL好多坑",
         "MobileMan",
         "ILoveAsa",
         "こんばんは",
@@ -139,13 +138,15 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 if (_name == "")
                 {
                     gameObjectName.SetActive(true);
-                    if (GameManager.Instance.CheckIfMobile())
-                    {
-                        inputFieldName.text = GetRandomName();
-                    }
+
+                    //if (GameManager.Instance.CheckIfMobile())
+                    //{
+                    //    inputFieldName.text = GetRandomName();                        
+                    //}
                 }
                 else
                 {
+
                     SetCanClick(false);
                     gameObjectLoading.SetActive(true);
                     GameManager.Instance.SubmitScore((response) => {                        
@@ -171,7 +172,7 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                     gameObjectLoading.SetActive(true);
                     SetCanClick(false);
                     GameManager.Instance.SubmitScore((response) =>
-                    {                        
+                    {
                         if (response.rank > MAX_RANKING_NUMBER)
                             response.rank = MAX_RANKING_NUMBER;
                         ShowLeaderBoard(response.rank);
