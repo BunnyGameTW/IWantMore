@@ -12,7 +12,11 @@ public enum EGameState
     END = 4,
     SCORE = 5,
 }
-
+public enum ELanguage
+{
+    CN = 0,
+    EN = 1
+}
 public class GameManager : MonoBehaviour
 {
     static GameManager instance;
@@ -49,6 +53,8 @@ public class GameManager : MonoBehaviour
     const float SLOW_MOTION_TIME = 2.0f;
     const float SLOW_MOTION_TIME_SCALE = 0.1f;
     const string SAVE_NAME = "save";//NOTE 只用來存分數
+    const string RULE_SAVE_NAME = "rule";
+    const string LANGUAGE_SAVE_NAME = "language";
     Vector2 POOL_IDLE_POSITION = new Vector2(15, 0);
     int[] fatScoreArray = {
         10, 200, 500, 1000, 2000,
@@ -90,7 +96,16 @@ public class GameManager : MonoBehaviour
     List<GameObject> particlePool, particleInUsePool;
     List<Vector3> enemyPositionList;
     LeaderboardController leaderboardController;
+    bool hasWatchRule;
+    ELanguage language;
+    
     public bool isMovingStateForMobile { get; set; }
+
+#if !UNITY_EDITOR && UNITY_WEBGL
+    [System.Runtime.InteropServices.DllImport("__Internal")]
+    private static extern bool IsMobile();
+#endif
+
     #region life cycle
     void Awake()
     {
@@ -104,7 +119,16 @@ public class GameManager : MonoBehaviour
             highScore = 0;
         hasUnlockSecret = highScore > UNLOCK_SECRET_SCORE;
 
-        AnimationEventListener [] events = FindObjectsOfType<AnimationEventListener>();//TODO
+        data = PlayerPrefs.GetString(RULE_SAVE_NAME);
+        hasWatchRule = data != "";
+
+        data = PlayerPrefs.GetString(LANGUAGE_SAVE_NAME);
+        if (data != "")
+            language = data == (ELanguage.CN.ToString()) ? ELanguage.CN : ELanguage.EN;
+        else
+            language = ELanguage.CN;
+
+        AnimationEventListener[] events = FindObjectsOfType<AnimationEventListener>();//TODO
         for (int i = 0; i < events.Length; i++)
         {
             events[i].sender += AnimationEvent;
@@ -146,7 +170,21 @@ public class GameManager : MonoBehaviour
 #endif
         return isMobile;
     }
+   
+   
+    public ELanguage GetLanguage()
+    {
+        return language;
+    }
 
+    public void SetLanguage(ELanguage _language)
+    {
+        if (_language != language)
+        {
+            language = _language;
+            PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, language.ToString());
+        }
+    }
     void MyDebug()
     {
         if (Input.GetKeyDown(KeyCode.S))
@@ -156,21 +194,27 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.SetString(SAVE_NAME, "");
             leaderboardController.SetPlayerName("");
         }
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (Input.GetKeyDown(KeyCode.C))
         {
-            if (leaderboardController.GetPlayerName() == "")
-                leaderboardController.SetPlayerName("BunnyGame");
-
-            leaderboardController.SubmitScore(10, (respoose) => {
-                LoginUIController.Instance.ShowLeaderBoard(respoose.rank);
-            });
+            SetLanguage(ELanguage.CN);
         }
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            SetLanguage(ELanguage.EN);
+        }
+        //    if (leaderboardController.GetPlayerName() == "")
+        //        leaderboardController.SetPlayerName("BunnyGame");
+
+        //    leaderboardController.SubmitScore(10, (respoose) => {
+        //        LoginUIController.Instance.ShowLeaderBoard(respoose.rank);
+        //    });
+        //}
 
     }
 
     void Update()
     {
-       // MyDebug();
+        MyDebug();
 
         //spawn enemy
         if (state == EGameState.GAME)
@@ -301,10 +345,6 @@ public class GameManager : MonoBehaviour
             
     }
 
-#if !UNITY_EDITOR && UNITY_WEBGL
-    [System.Runtime.InteropServices.DllImport("__Internal")]
-    private static extern bool IsMobile();
-#endif
 
     public void ChangeMoveState()
     {
@@ -324,6 +364,19 @@ public class GameManager : MonoBehaviour
         transitionAni[TRANISITION_NAME].speed = 1;
         transitionAni[TRANISITION_NAME].time = 0;
         transitionAni.Play(TRANISITION_NAME);
+    }
+
+    public bool HasWatchRule()
+    {
+        return hasWatchRule;
+    }
+    public void SetRuleWatched()
+    {
+        if (!hasWatchRule)
+        {
+            hasWatchRule = true;
+            PlayerPrefs.SetString(RULE_SAVE_NAME, hasWatchRule.ToString());
+        }
     }
 
     void SetStateStart(EGameState _state)

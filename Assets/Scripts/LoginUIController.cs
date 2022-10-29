@@ -9,6 +9,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     const string NUMBER_ROOT_NAME = "numbers";
     const string POP_IN_ANIMATION_NAME = "PopInOut";
     const string SCALE_IN_ANIMATION_NAME = "ScaleInOut";
+    const string RULE_TEXT_ROOT_NAME = "GameObjectTextRoot";
     public Sprite fatAsa, plate, kingAsa;
     public GameObject gameObjectHighScore, gameObjectCream, gameObjectSecret, buttonSecret;
     public GameObject gameObjectHow, gameObjectCredit, gameObjectNext, gameObjectPrev, gameObjectLeaderboard;
@@ -16,9 +17,13 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     public SpriteRenderer spriteRendererCake, spriteRendererAsa;
     public Sprite[] numberSprites;
     public Transform platePosition;
-    public Sprite[] howToSprites;
-    public Image howToImage;
     public GameObject scrollItem;
+    public Sprite[] languageSprites;//TODO
+    public Image languageImage, controlImage;
+    public Sprite mobileControlSprite;
+
+    public GameObject[] gameObjectRules;
+    public GameObject[] gameObjectIngredients;
 
     Animation ani, secretAni, howAni, creditAni, leaderboardAni;
     Image[] numberImages;
@@ -27,6 +32,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     LoopScrollRect scrollRect;
     LootLockerLeaderboardMember[] leaderboardDatas;
     bool canClick;
+    bool directPlay;
     static LoginUIController instance;
 
     public static LoginUIController Instance
@@ -48,8 +54,16 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         switch (name)
         {
             case "Start":
-                SetCanClick(false);
-                GameManager.Instance.ChangeState(EGameState.READY);
+                if (!GameManager.Instance.HasWatchRule())
+                {
+                    directPlay = true;
+                    ShowRule();
+                }
+                else
+                {
+                    SetCanClick(false);
+                    GameManager.Instance.ChangeState(EGameState.READY);
+                }
                 break;
             case "Secret":
                 gameObjectSecret.SetActive(true);
@@ -58,12 +72,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
                 secretAni.Play(POP_IN_ANIMATION_NAME);
                 break;
             case "How":
-                gameObjectHow.SetActive(true);
-                page = 0;
-                ChangePage(0);
-                howAni[SCALE_IN_ANIMATION_NAME].speed = 1;
-                howAni[SCALE_IN_ANIMATION_NAME].time = 0;
-                howAni.Play(SCALE_IN_ANIMATION_NAME);
+                ShowRule();
                 break;
             case "Credit":
                 gameObjectCredit.SetActive(true);
@@ -100,7 +109,35 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
             case "Rank":
                 ShowLeaderBoard();
                 break;
+            case "Language":
+                ChangeLanguage();
+                break;
         }
+    }
+
+    void ChangeLanguage()
+    {
+        ELanguage e = GameManager.Instance.GetLanguage();
+        e = e == ELanguage.CN ? ELanguage.EN : ELanguage.CN;
+        GameManager.Instance.SetLanguage(e);
+        UpdateLanguageButton(e);
+        UpdateRule(e);
+    }
+
+    void UpdateLanguageButton(ELanguage e)
+    {
+        languageImage.sprite = languageSprites[(int)e];
+    }
+
+    void ShowRule()
+    {
+        GameManager.Instance.SetRuleWatched();
+        gameObjectHow.SetActive(true);
+        page = 0;
+        ChangePage(0);
+        howAni[SCALE_IN_ANIMATION_NAME].speed = 1;
+        howAni[SCALE_IN_ANIMATION_NAME].time = 0;
+        howAni.Play(SCALE_IN_ANIMATION_NAME);
     }
 
     public void ShowLeaderBoard(int scrollIndex = 0)
@@ -224,6 +261,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         gameObjectCredit.SetActive(false);
         gameObjectLeaderboard.SetActive(false);
         SetCanClick(true);
+        
     }
     
     public void SetCanClick(bool _bool)
@@ -236,6 +274,14 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         scrollRect = gameObjectLeaderboard.GetComponentInChildren<LoopScrollRect>();
         scrollRect.dataSource = this;
         scrollRect.prefabSource = this;
+
+        //check platform
+        if (GameManager.Instance.CheckIfMobile())
+            controlImage.sprite = mobileControlSprite;
+        InitRuleTexts();
+        ELanguage e = GameManager.Instance.GetLanguage();
+        UpdateLanguageButton(e);
+        UpdateRule(e);
     }
     void AnimationEvent(string name)
     {
@@ -246,24 +292,94 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         if ((name == "startScale"))
         {
             if (howAni[SCALE_IN_ANIMATION_NAME].speed == -1 && gameObjectHow.activeSelf)
+            {
                 gameObjectHow.SetActive(false);
+                if (directPlay)
+                {
+                    SetCanClick(false);
+                    GameManager.Instance.ChangeState(EGameState.READY);
+                }
+            }
             else if(creditAni[SCALE_IN_ANIMATION_NAME].speed == -1 && gameObjectCredit.activeSelf)
                 gameObjectCredit.SetActive(false);
             else if (leaderboardAni[SCALE_IN_ANIMATION_NAME].speed == -1 && gameObjectLeaderboard.activeSelf)
                 gameObjectLeaderboard.SetActive(false);
         }
     }
+    string[] RULE_TEXTS_EN =
+    {
+        "Control", "click button to switch state,\nclick to control Asa's hand\nwhen button is hand state", "click to move Asa's body\nwhen button is body state",
+        "Control", "move mouse to control Asa's hand", "click to move Asa's body",
+
+        "eat with hand", "Asa would get hurt when body hit by food", "go fever when rainbow bar is filled\nduring this time Asa would get oversized\nand be able to eat with body",
+        "Cake Ingredient", "1 cal", "10 cal", "100 cal",
+    };
+
+    string[] RULE_TEXTS =
+    {      
+        "操作", "點擊按鈕切換狀態\n當按鈕是手的狀態時，點擊控制阿薩的手", "當按鈕是身體的狀態時，\n點擊移動阿薩的身體",
+        "操作", "移動滑鼠控制阿薩的手", "點擊左鍵移動阿薩的身體",
+
+        "用手吃東西", "身體被食物打到時阿薩會受傷", "彩虹條充滿時會進入狂熱狀態\n這段期間阿薩會變超肥而且可以用身體吃東西",
+        "蛋糕成分", "1 卡", "10 卡", "100 卡",
+    };
+
+    List<Text[]> ruleTexts;
+    void InitRuleTexts()
+    {
+        ruleTexts = new List<Text[]>(); 
+        for (int i = 0; i < gameObjectRules.Length; i++)
+        {
+            Transform t = gameObjectRules[i].transform.Find(RULE_TEXT_ROOT_NAME);
+            Text[] temp = new Text[t.childCount];
+            for (int j = 0; j < t.childCount; j++)
+            {
+                temp[j] = t.GetChild(j).GetComponent<Text>();
+            }
+            ruleTexts.Add(temp);
+        }        
+    }
+    void UpdateRule(ELanguage e)
+    {
+        string[] TEXTS = e == ELanguage.CN ? RULE_TEXTS : RULE_TEXTS_EN;
+        int index = GameManager.Instance.CheckIfMobile() ? 0 : ruleTexts[0].Length;
+        for (int i = 0; i < ruleTexts[0].Length; i++)
+        {
+            ruleTexts[0][i].text = TEXTS[index];
+            index++;
+        }
+
+        index = ruleTexts[0].Length * 2;
+        for (int i = 1; i < gameObjectRules.Length; i++)
+        {
+            for (int j = 0; j < ruleTexts[i].Length; j++)
+            {
+                ruleTexts[i][j].text = TEXTS[index];
+                index++;
+            }           
+        }
+        for (int i = 0; i < gameObjectIngredients.Length; i++)
+        {
+            gameObjectIngredients[i].SetActive((int)e == i);
+        }
+    }
+
     void ChangePage(int addPage)
     {
         page += addPage;
-        bool isShow = page != howToSprites.Length - 1;
+        bool isShow = page != gameObjectRules.Length - 1;
         if (isShow != gameObjectNext.activeSelf)
             gameObjectNext.SetActive(isShow);
 
         isShow = page != 0;
         if (isShow != gameObjectPrev.activeSelf)
             gameObjectPrev.SetActive(isShow);
-        howToImage.sprite = howToSprites[page];
+
+        for (int i = 0; i < gameObjectRules.Length; i++)
+        {
+            gameObjectRules[i].SetActive(i == page);
+        }
+
     }
 
 }

@@ -26,11 +26,19 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     const int MAX_RANKING_NUMBER = 100;
     string[] randomNames =
    {
-        "MobileMan",
         "ILoveAsa",
-        "こんばんは",
         "火神的受保人",
-        "早薩午薩晚薩好"
+        "晚薩好",
+        "早薩好",        
+        "薩氣の子",
+        "想不到要取什麼",
+        "Im颯颯子",
+        "HelloWorld",
+        "等等要吃啥",
+        "生快",
+        "OAO",
+        "OvO",
+        "Owo",        
     };
 
     static EndUIController instance;
@@ -138,15 +146,18 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 if (_name == "")
                 {
                     gameObjectName.SetActive(true);
-
-                    //if (GameManager.Instance.CheckIfMobile())
-                    //{
-                    //    inputFieldName.text = GetRandomName();                        
-                    //}
+                    if (GameManager.Instance.GetLanguage() == ELanguage.CN)
+                    {
+                        gameObjectName.transform.Find("TextTitle").GetComponent<Text>().text = "設定名字";
+                        inputFieldName.placeholder.GetComponent<Text>().text = "輸入名字\n(最多十個字，之後不能再更改)";
+                    }
+                    if (GameManager.Instance.CheckIfMobile())
+                    {
+                        inputFieldName.text = GetRandomName();
+                    }
                 }
                 else
                 {
-
                     SetCanClick(false);
                     gameObjectLoading.SetActive(true);
                     GameManager.Instance.SubmitScore((response) => {                        

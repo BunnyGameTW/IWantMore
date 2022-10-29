@@ -84,10 +84,13 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 9549245a40c255a40960cd9b9e07ff28, type: 3}
   - {fileID: 21300000, guid: b639bd5ada23daa469b5cac84f85bf5a, type: 3}
   - {fileID: 21300000, guid: 0aeecacae7906044da457a61c4b8b5ef, type: 3}
+  - {fileID: 21300000, guid: 63506b5b23061cf4da375b33d5f4a8aa, type: 3}
+  - {fileID: 21300000, guid: 4d7ac3bb2bc840f49a7f31070c9d12d2, type: 3}
   - {fileID: 21300000, guid: 83573abb86ce8644882bbd23a06951e2, type: 3}
   - {fileID: 21300000, guid: 35f913ebd9f4fcf4691cb90f7863f712, type: 3}
   - {fileID: 21300000, guid: a2321b1c314d4be48b587589f57dff26, type: 3}
   - {fileID: 21300000, guid: 1446234c84c203d49aff0880617baf15, type: 3}
+  - {fileID: 21300000, guid: faba82de53d31324fad67b3a0e801955, type: 3}
   - {fileID: 21300000, guid: 4703900fe426755499d6e28021b92b2e, type: 3}
   - {fileID: 21300000, guid: 8f9ab90fbe96c9a43ace660a9a0c24dc, type: 3}
   - {fileID: 21300000, guid: b6781b1f0c382d143aa60890701760e3, type: 3}
@@ -138,10 +141,13 @@ SpriteAtlas:
   - cellBg
   - btnUpload
   - btnStartText
+  - btnEN
+  - btnMoveState
   - btnNext
   - leaderboardText
   - combo
   - heart
+  - btnCN
   - btnHowTo
   - btnFrame
   - btnClose_2
