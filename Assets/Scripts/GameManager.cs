@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour
     const int MAX_COMBO = 999;
     const int MAX_SCORE = 9999999;
     const int MAX_ENEMY_COUNT = 200;
-    const int UNLOCK_SECRET_SCORE = 10000;//TODO
+    const int UNLOCK_SECRET_SCORE = 1000;
     const int INITIAL_ENEMY_COUNT = 30;
     const int EXPAND_POOL_COUNT = 10;
     const int INITIAL_PARTICLE_COUNT = 10;
@@ -202,14 +202,6 @@ public class GameManager : MonoBehaviour
         {
             SetLanguage(ELanguage.EN);
         }
-        //    if (leaderboardController.GetPlayerName() == "")
-        //        leaderboardController.SetPlayerName("BunnyGame");
-
-        //    leaderboardController.SubmitScore(10, (respoose) => {
-        //        LoginUIController.Instance.ShowLeaderBoard(respoose.rank);
-        //    });
-        //}
-
     }
 
     void Update()

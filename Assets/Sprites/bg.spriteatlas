@@ -53,7 +53,6 @@ SpriteAtlas:
   - {fileID: 21300000, guid: b9b038c0c3fe0ac49accf48a38c2354b, type: 3}
   - {fileID: 21300000, guid: 7f44cbe1fdb597743affa1bc816d1169, type: 3}
   - {fileID: 21300000, guid: c38be7029b26c3b42ae739e5c0b45e62, type: 3}
-  - {fileID: 21300000, guid: 9da28b92dbb18664db8f55c3d2e37914, type: 3}
   - {fileID: 21300000, guid: ad6729e329436954c9347687a9df0f90, type: 3}
   - {fileID: 21300000, guid: 149ffcd525d452e4f895ee51ca3d9c42, type: 3}
   - {fileID: 21300000, guid: 38182de518b39da43974faee4bf840ac, type: 3}
@@ -61,15 +60,14 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 79540b27d298eeb4a8bf17bedda187d3, type: 3}
   - {fileID: 21300000, guid: c8eb95b7475021e4c845e7af4107cdee, type: 3}
   - {fileID: 21300000, guid: f45bbad8494b6294cbc47bb89ea60c19, type: 3}
-  - {fileID: 21300000, guid: f894e6698edfe7941b96976d0081853f, type: 3}
   - {fileID: 21300000, guid: 18932f89c99240e4ba31bde712ef2926, type: 3}
   - {fileID: 21300000, guid: 5bc40ca9f87f5ba45900a6954aa1f1b5, type: 3}
+  - {fileID: 21300000, guid: 0251fd3b8323d76458863ddd69269b96, type: 3}
   - {fileID: 21300000, guid: 328ec2bc6b8ce83418dee9089eb0a17c, type: 3}
   m_PackedSpriteNamesToIndex:
   - loginBG
   - cake
   - cake_bg
-  - secret
   - gameBG
   - rule_3
   - plate
@@ -77,9 +75,9 @@ SpriteAtlas:
   - endPage
   - rule_1_pc
   - cakeNoShadow
-  - credits
   - noScore
   - rule_2
+  - secretBg
   - rule_1_mobile
   m_RenderDataMap: {}
   m_Tag: bg

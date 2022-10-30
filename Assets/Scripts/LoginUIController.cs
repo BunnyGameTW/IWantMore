@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +10,39 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     const string POP_IN_ANIMATION_NAME = "PopInOut";
     const string SCALE_IN_ANIMATION_NAME = "ScaleInOut";
     const string RULE_TEXT_ROOT_NAME = "GameObjectTextRoot";
+    string[] RULE_TEXTS_EN =
+    {
+        "Control", "click button to switch state,\nclick to control Asa's hand\nwhen button is hand state", "click to move Asa's body\nwhen button is body state",
+        "Control", "move mouse to control Asa's hand", "click to move Asa's body",
+
+        "eat with hand", "Asa would get hurt when body hit by food", "go fever when rainbow bar is filled\nduring this time Asa would get oversized\nand be able to eat with body",
+        "Cake Ingredient", "1 cal", "10 cal", "100 cal",
+    };
+
+    string[] RULE_TEXTS =
+    {
+        "æ“ä½œ", "é»æ“ŠæŒ‰éˆ•åˆ‡æ›ç‹€æ…‹\nç•¶æŒ‰éˆ•æ˜¯æ‰‹çš„ç‹€æ…‹æ™‚ï¼Œé»æ“Šæ§åˆ¶é˜¿è–©çš„æ‰‹", "ç•¶æŒ‰éˆ•æ˜¯èº«é«”çš„ç‹€æ…‹æ™‚ï¼Œ\né»æ“Šç§»å‹•é˜¿è–©çš„èº«é«”",
+        "æ“ä½œ", "ç§»å‹•æ»‘é¼ æ§åˆ¶é˜¿è–©çš„æ‰‹", "é»æ“Šå·¦éµç§»å‹•é˜¿è–©çš„èº«é«”",
+
+        "ç”¨æ‰‹åƒæ±è¥¿", "èº«é«”è¢«é£Ÿç‰©æ‰“åˆ°æ™‚é˜¿è–©æœƒå—å‚·", "å½©è™¹æ¢å……æ»¿æ™‚æœƒé€²å…¥ç‹‚ç†±ç‹€æ…‹\né€™æ®µæœŸé–“é˜¿è–©æœƒè®Šè¶…è‚¥è€Œä¸”å¯ä»¥ç”¨èº«é«”åƒæ±è¥¿",
+        "è›‹ç³•æˆåˆ†", "1 å¡", "10 å¡", "100 å¡",
+    };
+    string[] CREDIT_TEXTS =
+    {
+        "æ„Ÿè¬åå–®", "èƒŒæ™¯éŸ³æ¨‚ & éŸ³æ•ˆ", "æ¸¬è©¦", "ç¥ç§˜ä¿¡ä»¶åœ–", "ç‰¹åˆ¥æ„Ÿè¬",
+        "Credits", "bgm & sound effect", "QA", "secret letter image", "Special thanks to",
+    };
+    string[] SECRET_TEXTS =
+    {
+        "æ­å–œä½ ï¼", "    æˆ‘å€‘å¾ˆæ¦®å¹¸çš„é€šçŸ¥ä½ \nç”±æ–¼ä½ ç²¾é‡‡çš„è¡¨ç¾ï¼Œä½ å·²ç¶“ç²å¾—ç¨±è™Ÿï¼š\n\n\"<b><color=#EF6361>è›‹ç³•</color>ä¹‹<color=#FE9B0B>ç‹</color></b>\"\n\næ„Ÿè¬éŠç©!\\(oxo", "â’¸è›‹ç³•æ ªå¼æœƒç¤¾",
+        "Congratulations!", "        We are delighted to inform you\ndue to your amazing work\nyou have gain the title\n\n\"<b>THE <color=#FE9B0B>KING</color> OF <color=#EF6361>CAKE</color></b>\"\n\nThank you for playing this game \\(oxo", "â’¸Cake.Inc",
+    };
+    string[] LEADERBOARD_TITLE_TEXT =
+    {
+        "æ’è¡Œæ¦œ",
+        "Leaderboard"
+    };
+
     public Sprite fatAsa, plate, kingAsa;
     public GameObject gameObjectHighScore, gameObjectCream, gameObjectSecret, buttonSecret;
     public GameObject gameObjectHow, gameObjectCredit, gameObjectNext, gameObjectPrev, gameObjectLeaderboard;
@@ -18,7 +51,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     public Sprite[] numberSprites;
     public Transform platePosition;
     public GameObject scrollItem;
-    public Sprite[] languageSprites;//TODO
+    public Sprite[] languageSprites;
     public Image languageImage, controlImage;
     public Sprite mobileControlSprite;
 
@@ -33,6 +66,10 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     LootLockerLeaderboardMember[] leaderboardDatas;
     bool canClick;
     bool directPlay;
+    List<Text[]> ruleTexts;
+    Text[] creditsTexts, secretTexts;
+    Text leaderboardText;
+
     static LoginUIController instance;
 
     public static LoginUIController Instance
@@ -122,6 +159,9 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         GameManager.Instance.SetLanguage(e);
         UpdateLanguageButton(e);
         UpdateRule(e);
+        UpdateCredit(e);
+        UpdateSecret(e);
+        leaderboardText.text = LEADERBOARD_TITLE_TEXT[(int)e];
     }
 
     void UpdateLanguageButton(ELanguage e)
@@ -259,6 +299,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         buttonSecret.SetActive(false);
         gameObjectHow.SetActive(false);
         gameObjectCredit.SetActive(false);
+        
         gameObjectLeaderboard.SetActive(false);
         SetCanClick(true);
         
@@ -278,11 +319,19 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         //check platform
         if (GameManager.Instance.CheckIfMobile())
             controlImage.sprite = mobileControlSprite;
+
         InitRuleTexts();
+        InitCreditTexts();
+        InitSecretTexts();
+        leaderboardText = gameObjectLeaderboard.GetComponentInChildren<Text>();
         ELanguage e = GameManager.Instance.GetLanguage();
         UpdateLanguageButton(e);
-        UpdateRule(e);
+        UpdateRule(e);//TODO set default text to cn?
+        UpdateCredit(e);
+        UpdateSecret(e);
+        leaderboardText.text = LEADERBOARD_TITLE_TEXT[(int)e];
     }
+  
     void AnimationEvent(string name)
     {
         if ((name == "start") && (secretAni[POP_IN_ANIMATION_NAME].speed == -1))
@@ -306,25 +355,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
                 gameObjectLeaderboard.SetActive(false);
         }
     }
-    string[] RULE_TEXTS_EN =
-    {
-        "Control", "click button to switch state,\nclick to control Asa's hand\nwhen button is hand state", "click to move Asa's body\nwhen button is body state",
-        "Control", "move mouse to control Asa's hand", "click to move Asa's body",
-
-        "eat with hand", "Asa would get hurt when body hit by food", "go fever when rainbow bar is filled\nduring this time Asa would get oversized\nand be able to eat with body",
-        "Cake Ingredient", "1 cal", "10 cal", "100 cal",
-    };
-
-    string[] RULE_TEXTS =
-    {      
-        "¾Ş§@", "ÂIÀ»«ö¶s¤Á´«ª¬ºA\n·í«ö¶s¬O¤âªºª¬ºA®É¡AÂIÀ»±±¨îªüÂÄªº¤â", "·í«ö¶s¬O¨­Åéªºª¬ºA®É¡A\nÂIÀ»²¾°ÊªüÂÄªº¨­Åé",
-        "¾Ş§@", "²¾°Ê·Æ¹«±±¨îªüÂÄªº¤â", "ÂIÀ»¥ªÁä²¾°ÊªüÂÄªº¨­Åé",
-
-        "¥Î¤â¦YªF¦è", "¨­Åé³Q­¹ª«¥´¨ì®ÉªüÂÄ·|¨ü¶Ë", "±m­i±ø¥Rº¡®É·|¶i¤J¨g¼öª¬ºA\n³o¬q´Á¶¡ªüÂÄ·|ÅÜ¶WªÎ¦Ó¥B¥i¥H¥Î¨­Åé¦YªF¦è",
-        "³J¿|¦¨¤À", "1 ¥d", "10 ¥d", "100 ¥d",
-    };
-
-    List<Text[]> ruleTexts;
+  
     void InitRuleTexts()
     {
         ruleTexts = new List<Text[]>(); 
@@ -339,6 +370,27 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
             ruleTexts.Add(temp);
         }        
     }
+
+    void InitCreditTexts()
+    {
+        Transform t = gameObjectCredit.transform.Find("ImageBg/" + RULE_TEXT_ROOT_NAME);
+        creditsTexts = new Text[t.childCount];
+        for (int i = 0; i < t.childCount; i++)
+        {
+            creditsTexts[i] = t.GetChild(i).GetComponent<Text>();
+        }
+    }
+   
+    void InitSecretTexts()
+    {
+        Transform t = gameObjectSecret.transform.Find("Image/" + RULE_TEXT_ROOT_NAME);
+        secretTexts = new Text[t.childCount];
+        for (int i = 0; i < t.childCount; i++)
+        {
+            secretTexts[i] = t.GetChild(i).GetComponent<Text>();
+        }
+    }
+
     void UpdateRule(ELanguage e)
     {
         string[] TEXTS = e == ELanguage.CN ? RULE_TEXTS : RULE_TEXTS_EN;
@@ -361,6 +413,25 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         for (int i = 0; i < gameObjectIngredients.Length; i++)
         {
             gameObjectIngredients[i].SetActive((int)e == i);
+        }
+    }
+
+    void UpdateCredit(ELanguage e)
+    {
+        int index = e == ELanguage.CN ? 0 : creditsTexts.Length;
+        for (int i = 0; i < creditsTexts.Length; i++)
+        {
+            creditsTexts[i].text = CREDIT_TEXTS[index];
+            index++;
+        }
+    }
+    void UpdateSecret(ELanguage e)
+    {
+        int index = e == ELanguage.CN ? 0 : secretTexts.Length;
+        for (int i = 0; i < secretTexts.Length; i++)
+        {
+            secretTexts[i].text = SECRET_TEXTS[index];
+            index++;
         }
     }
 

@@ -20,7 +20,8 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     LoopScrollRect scrollRect;
     LootLockerLeaderboardMember[] leaderboardDatas;
     bool canClick;
-
+    Text leaderboardTitle;
+    Text[] secretTexts;
     const string POP_IN_ANIMATION_NAME = "PopInOut";
     const string SCALE_IN_ANIMATION_NAME = "ScaleInOut";
     const int MAX_RANKING_NUMBER = 100;
@@ -39,6 +40,17 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         "OAO",
         "OvO",
         "Owo",        
+    };
+    const string RULE_TEXT_ROOT_NAME = "GameObjectTextRoot";
+    string[] SECRET_TEXTS =
+    {
+        "恭喜你！", "    我們很榮幸的通知你\n由於你精采的表現，你已經獲得稱號：\n\"<b><color=#EF6361>蛋糕</color>之<color=#FE9B0B>王</color></b>\"\n回首頁確認看看吧\n\n感謝遊玩!\\(oxo", "Ⓒ蛋糕株式會社",
+        "Congratulations!", "        We are delighted to inform you\ndue to your amazing work\nyou have gain the title\n\"<b>THE <color=#FE9B0B>KING</color> OF <color=#EF6361>CAKE</color></b>\"\ngive it a look at home page!\n\nThank you for playing this game \\(oxo", "ⒸCake.Inc",
+    };
+    string[] LEADERBOARD_TITLE_TEXT =
+   {
+        "排行榜",
+        "Leaderboard"
     };
 
     static EndUIController instance;
@@ -77,8 +89,29 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
         gameObjectSecret.SetActive(false);
         gameObjectLeaderboard.SetActive(false);
         gameObjectName.SetActive(false);
+        leaderboardTitle = gameObjectLeaderboard.GetComponentInChildren<Text>();
+        
     }
 
+    void InitSecretTexts()
+    {
+        Transform t = gameObjectSecret.transform.Find("Image/" + RULE_TEXT_ROOT_NAME);
+        secretTexts = new Text[t.childCount];
+        for (int i = 0; i < t.childCount; i++)
+        {
+            secretTexts[i] = t.GetChild(i).GetComponent<Text>();
+        }
+    }
+
+    void UpdateSecret(ELanguage e)
+    {
+        int index = e == ELanguage.CN ? 0 : secretTexts.Length;
+        for (int i = 0; i < secretTexts.Length; i++)
+        {
+            secretTexts[i].text = SECRET_TEXTS[index];
+            index++;
+        }
+    }
     void AnimationEvent(string name)
     {
         if ((name == "start") && (secretAni[POP_IN_ANIMATION_NAME].speed == -1))
@@ -94,6 +127,8 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
 
     public void SetUnlockSecret()
     {
+        InitSecretTexts();
+        UpdateSecret(GameManager.Instance.GetLanguage());
         gameObjectSecret.SetActive(true);
         secretAni[POP_IN_ANIMATION_NAME].speed = 1;
         secretAni[POP_IN_ANIMATION_NAME].time = 0;
@@ -202,7 +237,10 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     {
         bool needShow = !gameObjectLeaderboard.activeSelf;
         if (needShow)
+        {
+            leaderboardTitle.text = LEADERBOARD_TITLE_TEXT[(int)GameManager.Instance.GetLanguage()];
             gameObjectLeaderboard.SetActive(true);
+        }
 
         
         GameManager.Instance.GetLeaderBoardDatas((LootLockerLeaderboardMember[] datas) => {
