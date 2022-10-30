@@ -196,7 +196,11 @@ public class GameUIController : MonoBehaviour
         }
     }
 
-    
+    public void UpdateFeverTime(float _feverTime)
+    {
+        feverTime = _feverTime;        
+    }
+
     public void SetFever(bool isFever, float _feverTime = 0)
     {
         feverRoot.SetActive(isFever);

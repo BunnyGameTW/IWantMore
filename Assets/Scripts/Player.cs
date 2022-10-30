@@ -25,6 +25,7 @@ public class Player : MonoBehaviour
     int nowHp;
     float hitColdDownTime;
     float feverTimer;
+    float maxFeverTime;
     float speed;
     float maxTurnSpeed;
     float smoothTime;
@@ -43,8 +44,8 @@ public class Player : MonoBehaviour
     const float ADD_SCALE = 0.1f;
     const float DONT_CHANGE_DIRECTION_OFFSET = 0.6f;
     const float MIN_DISTANCE = 0.1f;
-    const float COLD_DOWN_TIME = 1.0f;
-
+    const float COLD_DOWN_TIME = 2.0f;
+    const float ADD_FEVER_TIME = 0.01f;
     const float FEVER_TIME = 5.0f;
     const float SPEED_UP_RATIO = 4.0f;
     const float TURN_SPEED = 10000;
@@ -79,7 +80,7 @@ public class Player : MonoBehaviour
         nowScale = INITIAL_SCALE;
         isMoving = false;
         prevFaceR = true;
-        feverTimer = hitColdDownTime = 0;
+        feverTimer = maxFeverTime = hitColdDownTime = 0;        
         speed = SPEED;
         maxTurnSpeed = TURN_SPEED;
         smoothTime = SMOOTH_TIME;
@@ -214,7 +215,9 @@ public class Player : MonoBehaviour
                 bodyCol.tag = COLLIDER_TAG_PLAYER;
                 GameUIController.Instance.SetFever(false);
                 animator.SetBool(ANIMATOR_IS_FEVER_NAME, false);
-                SetScale(tempScale);
+                SetScale(1);
+                delayFatScale = tempScale + ADD_SCALE * addScaleCounter;
+                StartCoroutine("DelayFat");
                 speed = SPEED;
                 maxTurnSpeed = TURN_SPEED;
                 smoothTime = SMOOTH_TIME;
@@ -222,7 +225,14 @@ public class Player : MonoBehaviour
             }
         }
     }
+    float delayFatScale;
+    IEnumerator DelayFat()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("delayFatScale" + delayFatScale);
+        SetScale(delayFatScale);
 
+    }
     void SetScale(float _scale)
     {
         tempScaleTransform.localScale = new Vector2(_scale, _scale);
@@ -258,12 +268,31 @@ public class Player : MonoBehaviour
             bodyCol.enabled = false;
         }
     }
-
-    public void SetFever()
+    
+    public void AddFeverTime()
     {
         if (feverTimer <= 0)
+            return;
+
+        feverTimer += ADD_FEVER_TIME;
+        if (feverTimer > maxFeverTime)
+            feverTimer = maxFeverTime;
+
+        GameUIController.Instance.UpdateFeverTime(feverTimer);
+    }
+
+    
+    public void SetFever()
+    {
+        StopCoroutine("DelayFat");
+        if (feverTimer <= 0)
+        {
             tempScale = nowScale;
+            addScaleCounter = 0;
+        }
+        addScaleCounter++;
         feverTimer += FEVER_TIME;
+        maxFeverTime = feverTimer;
         bodyCol.tag = COLLIDER_TAG_HAND;        
         speed = SPEED * SPEED_UP_RATIO;
         maxTurnSpeed = TURN_SPEED * SPEED_UP_RATIO;
@@ -272,12 +301,13 @@ public class Player : MonoBehaviour
         GameUIController.Instance.SetFever(true, feverTimer);
         SetScale(FEVER_SCALE);
     }
-
+    int addScaleCounter;
     public void BecomeFatter()
     {
-        if (feverTimer > 0)
-            tempScale += ADD_SCALE;
-        else
-            SetScale(nowScale + ADD_SCALE);
+        //if (feverTimer > 0)
+        
+        //    tempScale += ADD_SCALE;
+        //else
+        //    SetScale(nowScale + ADD_SCALE);
     }
 }

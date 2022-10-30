@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
     const int INITIAL_ENEMY_COUNT = 30;
     const int EXPAND_POOL_COUNT = 10;
     const int INITIAL_PARTICLE_COUNT = 10;
-
+    const int GAME_START_ENEMY_COUNT = 5;
     const int COUNT_DOWN_TIME = 4;
 
     const float SPAWN_TIME = 3.0f;
@@ -56,9 +56,13 @@ public class GameManager : MonoBehaviour
     const string RULE_SAVE_NAME = "rule";
     const string LANGUAGE_SAVE_NAME = "language";
     Vector2 POOL_IDLE_POSITION = new Vector2(15, 0);
+    //int[] fatScoreArray = {
+    //    1, 2, 3, 4, 5,
+    //    6, 7, 8, 9, 10
+    //};
     int[] fatScoreArray = {
-        10, 200, 500, 1000, 2000,
-        5000, 7000, 10000, 50000, 80000
+        150, 400, 700, 1000, 1500,
+        2000, 5000, 10000, 20000, 50000
     };
     int[,] enemyKindArray = {
        {60, 30, 10},
@@ -71,6 +75,7 @@ public class GameManager : MonoBehaviour
        {20, 40, 40},
        {20, 35, 45},
        {10, 40, 50},
+       {10, 30, 60},
        {10, 30, 60},
     };
 
@@ -439,6 +444,7 @@ public class GameManager : MonoBehaviour
                 break;
             case EGameState.GAME:
                 player.SetState(EPlayerState.NORMAL);
+                SpawnEnemy(GAME_START_ENEMY_COUNT);
                 break;
             case EGameState.END:
                 AudioManager.Instance.PlaySound(EAudioClipKind.END, 0.5f);
@@ -511,7 +517,7 @@ public class GameManager : MonoBehaviour
         
 
         AudioManager.Instance.PlayHit();
-
+        player.AddFeverTime();
         //check difficulty
         if (difficulty != fatScoreArray.Length)
         {
@@ -527,14 +533,17 @@ public class GameManager : MonoBehaviour
             {
                 int offset = index - difficulty;
                 difficulty = index;
-                GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index]);
+                if(difficulty == fatScoreArray.Length)
+                    GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index - 1]);
+                else
+                    GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index]);
 
                 for (int i = 0; i < offset; i++)
                 {
                     spawnTime *= SPAWN_TIME_DECREASE_RATIO;
-                    player.BecomeFatter();
                     AudioManager.Instance.PlaySound(EAudioClipKind.LEVEL_UP);
                     player.SetFever();
+                    player.BecomeFatter();
 
                     for (int k = 0; k < enemies.Length; k++)
                     {
