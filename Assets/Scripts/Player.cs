@@ -57,6 +57,7 @@ public class Player : MonoBehaviour
     const string ANIMATOR_IS_FEVER_NAME = "isFever";
     const string ANIMATOR_IS_HIT_NAME = "isHit";
     const float FEVER_SCALE = 4.0f;
+    Vector3 RT, LB;
     void Awake()
     {        
         sp = hand.GetComponentInChildren<SpriteRenderer>();
@@ -66,7 +67,9 @@ public class Player : MonoBehaviour
         Reset();
         GameUIController.Instance.InitHp(nowHp);
         animator = GetComponentInChildren<Animator>();
-        feedbackPlayer = GetComponent<MMF_Player>();
+        feedbackPlayer = GetComponent<MMF_Player>();        
+        RT = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height));
+        LB = Camera.main.ScreenToWorldPoint(new Vector3(0, 0));
     }
 
     public int GetHp()
@@ -160,6 +163,29 @@ public class Player : MonoBehaviour
 
     }
 
+/*
+    Left Border -> x;
+    Right Border -> z;
+    Top Border -> w;
+    Bottom Border -> y;
+*/
+    Vector3 CheckBounding(Vector3 pos)
+    {
+        float borderX = bodySp.sprite.border.z / bodySp.sprite.pixelsPerUnit;
+        if (bodySp.bounds.max.x > RT.x + borderX)
+            pos.x = RT.x - bodySp.bounds.extents.x + borderX;
+        else if (bodySp.bounds.min.x + borderX < LB.x)
+            pos.x = LB.x + bodySp.bounds.extents.x - borderX;
+
+        float borderW = bodySp.sprite.border.w / bodySp.sprite.pixelsPerUnit;
+        float borderB = bodySp.sprite.border.y / bodySp.sprite.pixelsPerUnit;
+        if (bodySp.bounds.max.y > RT.y + borderW)
+            pos.y = RT.y - bodySp.bounds.extents.y + borderW;
+        else if (bodySp.bounds.min.y + borderB < LB.y)
+            pos.y = LB.y + bodySp.bounds.extents.y - borderB;
+        return pos;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -178,8 +204,15 @@ public class Player : MonoBehaviour
 
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(inputPosition);
         Vector3 direction = GetMouseDirection(mousePosition);
+
+#if !UNITY_EDITOR && UNITY_WEBGL
+        if (GameManager.Instance.CheckIfMobile() && 
+        !GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition))
+            UpdateView(direction, mousePosition);//hand rotation & length
+#else
         UpdateView(direction, mousePosition);//hand rotation & length
-        
+#endif
+
         CheckControl();
 
         if (isMoving)
@@ -188,6 +221,7 @@ public class Player : MonoBehaviour
             UpdateFaceTo(direction2);
             direction.z = 0;
             transform.position += direction.normalized * speed * Time.deltaTime;
+            transform.position = CheckBounding(transform.position);
             
             if (Vector2.Distance(mousePosition, hand.transform.position) <= MIN_DISTANCE)
             {
