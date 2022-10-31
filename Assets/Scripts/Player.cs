@@ -30,7 +30,7 @@ public class Player : MonoBehaviour
     float maxTurnSpeed;
     float smoothTime;
     float tempScale;
-
+    float delayFatScale;
     EPlayerState state;
     Animator animator;
     MMF_Player feedbackPlayer;
@@ -45,12 +45,13 @@ public class Player : MonoBehaviour
     const float DONT_CHANGE_DIRECTION_OFFSET = 0.6f;
     const float MIN_DISTANCE = 0.1f;
     const float COLD_DOWN_TIME = 2.0f;
-    const float ADD_FEVER_TIME = 0.01f;
-    const float FEVER_TIME = 5.0f;
+    const float ADD_FEVER_TIME = 0.05f;
+    const float FEVER_TIME = 3.0f;
     const float SPEED_UP_RATIO = 4.0f;
     const float TURN_SPEED = 10000;
     const float SMOOTH_TIME = 0.001f;
     const float SMOOTH_RATIO = 100;
+    const float DELAY_GET_FAT_TIME = 0.5f;
 
     const string ANIMATOR_IS_MOVING_NAME = "isMoving";
     const string ANIMATOR_IS_FEVER_NAME = "isFever";
@@ -225,11 +226,10 @@ public class Player : MonoBehaviour
             }
         }
     }
-    float delayFatScale;
+
     IEnumerator DelayFat()
     {
-        yield return new WaitForSeconds(0.5f);
-        Debug.Log("delayFatScale" + delayFatScale);
+        yield return new WaitForSeconds(DELAY_GET_FAT_TIME);
         SetScale(delayFatScale);
 
     }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: -4079453217182682838}
   - component: {fileID: 5804136906349128947}
   - component: {fileID: 547033927643853290}
+  - component: {fileID: 2975150071814496218}
   m_Layer: 0
   m_Name: enemy_explode
   m_TagString: Untagged
@@ -48,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e261c8391657b0c4ab629443feecabed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  kind: 2
+  kind: 3
   score: 10
   speed: 1
 --- !u!50 &-4079453217182682838
@@ -79,7 +80,7 @@ Animation:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5366785364136762759}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Animation: {fileID: 7400000, guid: a5a58a1317500f74987ed9360465479b, type: 2}
   m_Animations:
@@ -502,6 +503,26 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
+--- !u!95 &2975150071814496218
+Animator:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5366785364136762759}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 11d1b6abb421a9f4aa92828116eb150d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &5366785364288545884
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,7 +597,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 207ae38889c4ee74b9b8cefa8ee991d0, type: 3}
+  m_Sprite: {fileID: 21300000, guid: e96d0767bf48c2849bfc282f1f2162b4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -600,6 +621,6 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.12}
+  m_Offset: {x: 0, y: -0.45}
   serializedVersion: 2
-  m_Radius: 0.8
+  m_Radius: 0.71

@@ -24,7 +24,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         "操作", "點擊按鈕切換狀態\n當按鈕是手的狀態時，點擊控制阿薩的手", "當按鈕是身體的狀態時，\n點擊移動阿薩的身體",
         "操作", "移動滑鼠控制阿薩的手", "點擊左鍵移動阿薩的身體",
 
-        "用手吃東西", "身體被食物打到時阿薩會受傷", "彩虹條充滿時會進入狂熱狀態\n這段期間阿薩會變超肥而且可以用身體吃東西",
+        "用手吃東西", "身體被食物打到時阿薩會受傷", "彩虹條充滿時會進入狂熱狀態\n這段期間阿薩會變超肥而且可以用身體吃東西\n結束後阿薩變回原本大小並長肥一點點",
         "蛋糕成分", "1 卡", "10 卡", "100 卡",
     };
     string[] CREDIT_TEXTS =
@@ -201,8 +201,8 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
             leaderboardDatas = datas;
             scrollRect.totalCount = datas.Length;
             scrollRect.RefillCells();
-            if (scrollIndex != 0)
-                scrollRect.ScrollToCellWithinTime(scrollIndex - 1, 0.5f);
+            scrollRect.ScrollToCellWithinTime(0, 0.5f);
+            //if (scrollIndex != 0)
         });
     }
     // Implement your own Cache Pool here. The following is just for example.

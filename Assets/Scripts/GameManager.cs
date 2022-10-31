@@ -34,11 +34,11 @@ public class GameManager : MonoBehaviour
     const float COMBO_BONUS = 2.0f;
     const int MAX_COMBO = 999;
     const int MAX_SCORE = 9999999;
-    const int MAX_ENEMY_COUNT = 200;
+    const int MAX_ENEMY_COUNT = 300;//TODO
     const int UNLOCK_SECRET_SCORE = 1000;
-    const int INITIAL_ENEMY_COUNT = 30;
+    const int INITIAL_ENEMY_COUNT = 50;
     const int EXPAND_POOL_COUNT = 10;
-    const int INITIAL_PARTICLE_COUNT = 10;
+    const int INITIAL_PARTICLE_COUNT = 30;
     const int GAME_START_ENEMY_COUNT = 5;
     const int COUNT_DOWN_TIME = 4;
 
@@ -56,27 +56,23 @@ public class GameManager : MonoBehaviour
     const string RULE_SAVE_NAME = "rule";
     const string LANGUAGE_SAVE_NAME = "language";
     Vector2 POOL_IDLE_POSITION = new Vector2(15, 0);
-    //int[] fatScoreArray = {
-    //    1, 2, 3, 4, 5,
-    //    6, 7, 8, 9, 10
-    //};
     int[] fatScoreArray = {
-        150, 400, 700, 1000, 1500,
-        2000, 5000, 10000, 20000, 50000
+        150, 500, 1000, 3000, 5000, 
+        10000, 20000, 50000, 100000, 150000,
     };
     int[,] enemyKindArray = {
-       {60, 30, 10},
-       {50, 40, 10},
-       {50, 30, 20},
+       {60, 10, 30},
+       {50, 10, 40},
+       {50, 20, 30},
        {40, 30, 30},
-       {35, 35, 30},
+       {35, 30, 35},
 
-       {30, 30, 40},
+       {30, 40, 30},
        {20, 40, 40},
-       {20, 35, 45},
-       {10, 40, 50},
-       {10, 30, 60},
-       {10, 30, 60},
+       {20, 45, 35},
+       {20, 40, 40},
+       {30, 30, 40},
+       {30, 30, 40},
     };
 
     public Enemy[] enemies;
@@ -519,7 +515,7 @@ public class GameManager : MonoBehaviour
         AudioManager.Instance.PlayHit();
         player.AddFeverTime();
         //check difficulty
-        if (difficulty != fatScoreArray.Length)
+        if (difficulty != fatScoreArray.Length)//TODO reach max level add fixed score to trigger fever?
         {
             int index = difficulty;
             for (int i = difficulty; i < fatScoreArray.Length; i++)
@@ -660,7 +656,7 @@ public class GameManager : MonoBehaviour
             sum += enemyKindArray[_difficulty, i];
             if (randomValue < sum)
             {
-                return i + 1;
+                return i + 2;
             }
         }
         return 1;

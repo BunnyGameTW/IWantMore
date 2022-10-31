@@ -74,7 +74,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: 21ab3fbe151d9c244b0c79237e5492be, type: 3}
+  m_Sprite: {fileID: 21300000, guid: dba633b310e0f314680c84f3a76670fa, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -98,7 +98,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.021484971, y: 0.111485034}
+  m_Offset: {x: 0.021484971, y: -0.04}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -109,7 +109,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.910301, y: 1.5736654}
+  m_Size: {x: 1.76, y: 1.3}
   m_EdgeRadius: 0
 --- !u!1 &749121837475397359
 GameObject:
@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: -4428308616183686665}
   - component: {fileID: 3053437269220054009}
   - component: {fileID: 2831083017033250491}
+  - component: {fileID: 6842255699581080181}
   m_Layer: 0
   m_Name: enemy_spawn
   m_TagString: Untagged
@@ -159,7 +160,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e261c8391657b0c4ab629443feecabed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  kind: 3
+  kind: 2
   score: 100
   speed: 0.5
 --- !u!50 &-4428308616183686665
@@ -191,7 +192,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 749121837475397359}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 11d1b6abb421a9f4aa92828116eb150d, type: 2}
   m_CullingMode: 0
@@ -617,3 +618,19 @@ MonoBehaviour:
           m_PreInfinity: 2
           m_PostInfinity: 2
           m_RotationOrder: 4
+--- !u!111 &6842255699581080181
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 749121837475397359}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Animation: {fileID: 7400000, guid: a5a58a1317500f74987ed9360465479b, type: 2}
+  m_Animations:
+  - {fileID: 7400000, guid: a5a58a1317500f74987ed9360465479b, type: 2}
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_CullingType: 0

@@ -25,13 +25,16 @@ public class Enemy : MonoBehaviour
     Vector3 direction;    
     float timer, spawnTimer;
     float spawnDirection;
-    int bulletNumber;
+    int bulletNumber, spawnCount;
     Animator animator;
     float shootAnimationTime;
     List<MMF_Feedback> feedbacks;
     MMF_Player feedbackPlayer;
     const int BULLET_NUMBER_MIN = 3; 
     const int BULLET_NUMBER_MAX = 8;
+
+    const int SPAWN_NUMBER_MIN = 1;
+    const int SPAWN_NUMBER_MAX = 4;
     const float SPAWN_TIME = 3;
     const float COLD_DOWN_TIME = 0.2f;
     const int MAX_DIRECTION = 4;
@@ -69,6 +72,7 @@ public class Enemy : MonoBehaviour
         spawnTimer = 0;
         spawnDirection = Random.Range(1, MAX_DIRECTION + 1);
         bulletNumber = BULLET_NUMBER_MIN;
+        spawnCount = SPAWN_NUMBER_MIN;
     }
 
     #region public
@@ -97,7 +101,7 @@ public class Enemy : MonoBehaviour
                     if (!GameManager.Instance.CheckCanSpawnEnemy())
                         continue;
 
-                    Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.NORMAL);
+                    Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.SPAWN);
                     float angle = value * (i + 1);
                     Vector3 v = GetRotation(angle);
                     Vector3 pos = transform.position;
@@ -119,6 +123,7 @@ public class Enemy : MonoBehaviour
         else if (state == EEnemyState.NORMAL)
         {
             bulletNumber = Mathf.Min(BULLET_NUMBER_MAX, BULLET_NUMBER_MIN + GameManager.Instance.difficulty);
+            spawnCount = Mathf.Min(SPAWN_NUMBER_MAX, SPAWN_NUMBER_MIN + (int)(GameManager.Instance.difficulty * 0.5f));
         }
     }
 
@@ -131,6 +136,8 @@ public class Enemy : MonoBehaviour
     {
         if (bulletNumber < BULLET_NUMBER_MAX)
             bulletNumber++;
+        if (spawnCount < SPAWN_NUMBER_MAX)
+            spawnCount++;
     }
     #endregion
 
@@ -169,16 +176,20 @@ public class Enemy : MonoBehaviour
                 animator.SetBool(ANIMATOR_SHOOT_TRIGGER, false);
 
                 //direction
-                Vector3 v = GetRotation(spawnDirection * SPAWN_ANGLE);
-                spawnDirection += 1;
-                if (spawnDirection > MAX_DIRECTION)
-                    spawnDirection = 1;
-                Vector3 pos = transform.position;
-                Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.EXPLODE);
-                e.SetPosition(pos);
-                e.SetTarget(pos + v);
-                e.SetState(EEnemyState.NORMAL);
-                if (IsInView(pos))
+                for (int i = 0; i < spawnCount; i++)
+                {
+                    Vector3 v = GetRotation(spawnDirection * SPAWN_ANGLE);
+                    spawnDirection += 1;
+                    if (spawnDirection > MAX_DIRECTION)
+                        spawnDirection = 1;
+                    Vector3 pos = transform.position;
+                    Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.NORMAL);
+                    e.SetPosition(pos);
+                    e.SetTarget(pos + v);
+                    e.SetState(EEnemyState.NORMAL);
+                }
+
+                if (IsInView(transform.position))
                     AudioManager.Instance.PlaySound(EAudioClipKind.SHOOT, 0.2f);
 
             }

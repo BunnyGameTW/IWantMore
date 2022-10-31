@@ -46,16 +46,23 @@ SpriteAtlas:
   - {fileID: 21300000, guid: d8f50ca262af832458336817f13dcfb6, type: 3}
   - {fileID: 21300000, guid: 86a88bd28345b0241b10e2957cef384a, type: 3}
   - {fileID: 21300000, guid: a02f7da37fcf76840b6b904807537656, type: 3}
+  - {fileID: 21300000, guid: dba633b310e0f314680c84f3a76670fa, type: 3}
   - {fileID: 21300000, guid: 904190554d92a04439a93dc4f9403a48, type: 3}
   - {fileID: 21300000, guid: 4dd881268da0c944e979903ff44794f5, type: 3}
+  - {fileID: 21300000, guid: 796dbdb65bb93d443bfe3e4069fd3332, type: 3}
+  - {fileID: 21300000, guid: e96d0767bf48c2849bfc282f1f2162b4, type: 3}
+  - {fileID: 21300000, guid: 3ab0d938cec9ab6459fef81776e3d48e, type: 3}
   - {fileID: 21300000, guid: 207ae38889c4ee74b9b8cefa8ee991d0, type: 3}
   - {fileID: 21300000, guid: bf0d94f82790cb24884044b27e433922, type: 3}
   - {fileID: 21300000, guid: 00213a59ea2d962469dd69e8ee6423c4, type: 3}
   - {fileID: 21300000, guid: c5faf4fa96dd8ab448377bbcc683c8f2, type: 3}
   - {fileID: 21300000, guid: bc69ddbcebbd4824baf9e8f7f7122921, type: 3}
   - {fileID: 21300000, guid: 18a5a4cc24fb5cb45a7bca9bf0e840dd, type: 3}
+  - {fileID: 21300000, guid: f9410d3e8901420488511c2a585e1e3e, type: 3}
   - {fileID: 21300000, guid: 21ab3fbe151d9c244b0c79237e5492be, type: 3}
+  - {fileID: 21300000, guid: 29def8de71e18274aac4fde3bfe4f777, type: 3}
   - {fileID: 21300000, guid: 7825743fc5425bc42a6202b2cfeb5201, type: 3}
+  - {fileID: 21300000, guid: 5b68f39febbdcab418af266d04372723, type: 3}
   - {fileID: 21300000, guid: 67aafe9f23e5c9043a0e19b618c1f5b7, type: 3}
   m_PackedSpriteNamesToIndex:
   - asaIdle_2
@@ -66,16 +73,23 @@ SpriteAtlas:
   - asaHit_1
   - asaFat_2
   - die_3
+  - cake_1
   - asa_2
   - die_1
+  - strawberry_2
+  - starwberry_0
+  - cake_2
   - strawberry
   - cakeShoot_1
   - asaMove_1
   - asa_11
   - asaIdle_1
   - asaFat_1
+  - cake_3
   - cakIdle
+  - cream_1
   - asa_03
+  - strawberry_1
   - cream
   m_RenderDataMap: {}
   m_Tag: char
