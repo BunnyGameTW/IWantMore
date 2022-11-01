@@ -72,7 +72,7 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
     // Start is called before the first frame update
     void Awake()
     {
-        Debug.Log("end ui controller");
+        //Debug.Log("end ui controller");
         instance = this;
         scoreImages = new Image[scoreRoot.transform.childCount];
         int j = 0;
@@ -252,13 +252,17 @@ public class EndUIController : MonoBehaviour, LoopScrollDataSource, LoopScrollPr
                 leaderboardAni[SCALE_IN_ANIMATION_NAME].time = 0;
                 leaderboardAni.Play(SCALE_IN_ANIMATION_NAME);
             }
-            gameObjectNoData.SetActive(datas.Length == 0);
+            bool hasData = datas.Length != 0;
+            gameObjectNoData.SetActive(!hasData);
 
             leaderboardDatas = datas;
             scrollRect.totalCount = datas.Length;
             scrollRect.RefillCells();
-            if (scrollIndex != 0)
-                scrollRect.ScrollToCellWithinTime(scrollIndex - 1, 0.5f);
+            if (hasData)
+            {
+                if (scrollIndex != 0)
+                    scrollRect.ScrollToCellWithinTime(scrollIndex - 1, 0.5f);
+            }
         });
     }
     public GameObject GetObject(int index)

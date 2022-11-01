@@ -28,12 +28,15 @@ public class Player : MonoBehaviour
     float maxFeverTime;
     float speed;
     float maxTurnSpeed;
-    float smoothTime;
     float tempScale;
     float delayFatScale;
+    int addScaleCounter;
+    Vector3 RT, LB;
+
     EPlayerState state;
     Animator animator;
     MMF_Player feedbackPlayer;
+
     public const string COLLIDER_TAG_HAND = "hand";
     public const string COLLIDER_TAG_PLAYER = "Player";
 
@@ -46,18 +49,18 @@ public class Player : MonoBehaviour
     const float MIN_DISTANCE = 0.1f;
     const float COLD_DOWN_TIME = 2.0f;
     const float ADD_FEVER_TIME = 0.05f;
+    const float ADD_FEVER_TIME_LAST_DIFFICULTY = 0.005f;
     const float FEVER_TIME = 3.0f;
     const float SPEED_UP_RATIO = 4.0f;
     const float TURN_SPEED = 10000;
     const float SMOOTH_TIME = 0.001f;
-    const float SMOOTH_RATIO = 100;
     const float DELAY_GET_FAT_TIME = 0.5f;
 
     const string ANIMATOR_IS_MOVING_NAME = "isMoving";
     const string ANIMATOR_IS_FEVER_NAME = "isFever";
     const string ANIMATOR_IS_HIT_NAME = "isHit";
     const float FEVER_SCALE = 4.0f;
-    Vector3 RT, LB;
+    
     void Awake()
     {        
         sp = hand.GetComponentInChildren<SpriteRenderer>();
@@ -86,26 +89,24 @@ public class Player : MonoBehaviour
         prevFaceR = true;
         feverTimer = maxFeverTime = hitColdDownTime = 0;        
         speed = SPEED;
-        maxTurnSpeed = TURN_SPEED;
-        smoothTime = SMOOTH_TIME;
+        maxTurnSpeed = TURN_SPEED;        
         transform.position = Vector2.zero;
         transform.localScale = new Vector2(nowScale, nowScale);        
     }
 
     Vector3 GetMouseDirection(Vector3 mousePosition)
     {
-               
         return mousePosition - hand.transform.position;
     }
 
     void UpdateView(Vector3 direction, Vector3 mousePosition)
     {
         float targetAngle = Vector2.SignedAngle(Vector2.right, direction);
-        angle = Mathf.SmoothDampAngle(angle, targetAngle, ref currentVelocity, smoothTime, maxTurnSpeed);
+        angle = Mathf.SmoothDampAngle(angle, targetAngle, ref currentVelocity, SMOOTH_TIME, maxTurnSpeed);
         hand.transform.eulerAngles = new Vector3(0, 0, angle);
 
         float distance = Vector2.Distance(mousePosition, hand.transform.position);
-        float length = distance * HAND_RATIO / nowScale;
+        float length = distance * HAND_RATIO / transform.localScale.x;
         sp.size = new Vector2(length, 1);
         col.offset = new Vector2(length, 0);
     }
@@ -205,13 +206,6 @@ public class Player : MonoBehaviour
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(inputPosition);
         Vector3 direction = GetMouseDirection(mousePosition);
 
-#if !UNITY_EDITOR && UNITY_WEBGL
-        if (GameManager.Instance.CheckIfMobile() && 
-        !GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition))
-            UpdateView(direction, mousePosition);//hand rotation & length
-#else
-        UpdateView(direction, mousePosition);//hand rotation & length
-#endif
 
         CheckControl();
 
@@ -229,6 +223,13 @@ public class Player : MonoBehaviour
             }
         }
 
+#if !UNITY_EDITOR && UNITY_WEBGL
+        if (GameManager.Instance.CheckIfMobile() && 
+        !GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition) || !GameManager.Instance.CheckIfMobile())
+            UpdateView(direction, mousePosition);//hand rotation & length
+#else
+        UpdateView(direction, mousePosition);//hand rotation & length
+#endif
 
         if (hitColdDownTime > 0)
         {
@@ -245,7 +246,7 @@ public class Player : MonoBehaviour
             feverTimer -= Time.deltaTime;
             if (feverTimer <= 0)
             {
-                Debug.Log("fever end");
+                //Debug.Log("fever end");
                 feverTimer = 0;
                 bodyCol.tag = COLLIDER_TAG_PLAYER;
                 GameUIController.Instance.SetFever(false);
@@ -255,7 +256,6 @@ public class Player : MonoBehaviour
                 StartCoroutine("DelayFat");
                 speed = SPEED;
                 maxTurnSpeed = TURN_SPEED;
-                smoothTime = SMOOTH_TIME;
                 AudioManager.Instance.PlaySound(EAudioClipKind.FEVER_END);
             }
         }
@@ -288,6 +288,9 @@ public class Player : MonoBehaviour
     
     public void SetHit()
     {
+        if (hitColdDownTime > 0)
+            return;
+
         nowHp--;
         GameUIController.Instance.SetHp(nowHp);
         animator.SetBool(ANIMATOR_IS_HIT_NAME, true);
@@ -308,7 +311,11 @@ public class Player : MonoBehaviour
         if (feverTimer <= 0)
             return;
 
-        feverTimer += ADD_FEVER_TIME;
+        if (GameManager.Instance.CheckIsLastStage())
+            feverTimer += ADD_FEVER_TIME_LAST_DIFFICULTY;
+        else
+            feverTimer += ADD_FEVER_TIME;
+
         if (feverTimer > maxFeverTime)
             feverTimer = maxFeverTime;
 
@@ -330,18 +337,8 @@ public class Player : MonoBehaviour
         bodyCol.tag = COLLIDER_TAG_HAND;        
         speed = SPEED * SPEED_UP_RATIO;
         maxTurnSpeed = TURN_SPEED * SPEED_UP_RATIO;
-        //smoothTime = SMOOTH_TIME / SMOOTH_RATIO;
         animator.SetBool(ANIMATOR_IS_FEVER_NAME, true);
         GameUIController.Instance.SetFever(true, feverTimer);
         SetScale(FEVER_SCALE);
-    }
-    int addScaleCounter;
-    public void BecomeFatter()
-    {
-        //if (feverTimer > 0)
-        
-        //    tempScale += ADD_SCALE;
-        //else
-        //    SetScale(nowScale + ADD_SCALE);
     }
 }

@@ -23,8 +23,8 @@ public class Enemy : MonoBehaviour
     public float speed;
     EEnemyState state = EEnemyState.NONE;
     Vector3 direction;    
-    float timer, spawnTimer;
-    float spawnDirection;
+    float timer, spawnTimer, spawnTime;
+    //float spawnDirection;
     int bulletNumber, spawnCount;
     Animator animator;
     float shootAnimationTime;
@@ -34,11 +34,13 @@ public class Enemy : MonoBehaviour
     const int BULLET_NUMBER_MAX = 8;
 
     const int SPAWN_NUMBER_MIN = 1;
-    const int SPAWN_NUMBER_MAX = 4;
-    const float SPAWN_TIME = 3;
-    const float COLD_DOWN_TIME = 0.2f;
-    const int MAX_DIRECTION = 4;
-    const float SPAWN_ANGLE = 90.0f;
+    const int SPAWN_NUMBER_MAX = 3;
+    const float SPAWN_TIME = 5;
+    const float COLD_DOWN_TIME = 0.3f;
+    const float NORMAL_SPEED = 1;
+    const float COLD_DOWN_SPEED = 2;
+    //const int MAX_DIRECTION = 4;
+    //const float SPAWN_ANGLE = 90.0f;
     const string ANIMATOR_SHOOT_TRIGGER = "shoot";
     const string ANIMATION_SHOOT_NAME = "EnemyShoot";
     
@@ -70,9 +72,11 @@ public class Enemy : MonoBehaviour
     {
         timer = 0;
         spawnTimer = 0;
-        spawnDirection = Random.Range(1, MAX_DIRECTION + 1);
+        spawnTime = SPAWN_TIME + Random.Range(1, 3);
         bulletNumber = BULLET_NUMBER_MIN;
         spawnCount = SPAWN_NUMBER_MIN;
+        if (kind == EEnemyKind.SPAWN)
+            animator.SetBool(ANIMATOR_SHOOT_TRIGGER, false);
     }
 
     #region public
@@ -105,7 +109,7 @@ public class Enemy : MonoBehaviour
                     float angle = value * (i + 1);
                     Vector3 v = GetRotation(angle);
                     Vector3 pos = transform.position;
-
+                    e.SetSpeed(COLD_DOWN_SPEED);
                     e.SetPosition(pos);
                     e.SetTarget(pos + v);
                     e.SetState(EEnemyState.COLD_DOWN);
@@ -132,12 +136,11 @@ public class Enemy : MonoBehaviour
         transform.position = pos;
     }
 
-    public void AddDifficulty()
+    public void AddDifficulty(int _nowDifficulty)
     {
         if (bulletNumber < BULLET_NUMBER_MAX)
-            bulletNumber++;
-        if (spawnCount < SPAWN_NUMBER_MAX)
-            spawnCount++;
+            bulletNumber++;        
+        spawnCount = Mathf.Min(SPAWN_NUMBER_MAX, SPAWN_NUMBER_MIN + (int)(_nowDifficulty * 0.5f));
     }
     #endregion
 
@@ -162,7 +165,7 @@ public class Enemy : MonoBehaviour
         if (kind == EEnemyKind.SPAWN)
         {
             spawnTimer += Time.deltaTime;            
-            if (spawnTimer >= (SPAWN_TIME - shootAnimationTime) && !animator.GetBool(ANIMATOR_SHOOT_TRIGGER))
+            if (spawnTimer >= (spawnTime - shootAnimationTime) && !animator.GetBool(ANIMATOR_SHOOT_TRIGGER))
             {
                 //check spawn
                 if (!GameManager.Instance.CheckCanSpawnEnemy() || !IsInView(transform.localPosition))
@@ -170,18 +173,16 @@ public class Enemy : MonoBehaviour
                 else
                     animator.SetBool(ANIMATOR_SHOOT_TRIGGER, true);
             }
-            if (spawnTimer >= SPAWN_TIME)
+            if (spawnTimer >= spawnTime)
             {
                 spawnTimer = 0;
                 animator.SetBool(ANIMATOR_SHOOT_TRIGGER, false);
 
-                //direction
+                float angle = 360 / spawnCount;
+                float randomAngle = Random.Range(0, 360);
                 for (int i = 0; i < spawnCount; i++)
                 {
-                    Vector3 v = GetRotation(spawnDirection * SPAWN_ANGLE);
-                    spawnDirection += 1;
-                    if (spawnDirection > MAX_DIRECTION)
-                        spawnDirection = 1;
+                    Vector3 v = GetRotation(angle * i + randomAngle);
                     Vector3 pos = transform.position;
                     Enemy e = GameManager.Instance.GetEnemy(EEnemyKind.NORMAL);
                     e.SetPosition(pos);
@@ -199,7 +200,10 @@ public class Enemy : MonoBehaviour
         {
             timer += Time.deltaTime;
             if (timer > COLD_DOWN_TIME)
+            {
                 state = EEnemyState.NORMAL;
+                SetSpeed(NORMAL_SPEED);
+            }
         }
         
     }

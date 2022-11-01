@@ -180,7 +180,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         howAni.Play(SCALE_IN_ANIMATION_NAME);
     }
 
-    public void ShowLeaderBoard(int scrollIndex = 0)
+    public void ShowLeaderBoard()
     {
         bool needShow = !gameObjectLeaderboard.activeSelf;
         if (needShow)
@@ -196,13 +196,16 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
                 leaderboardAni[SCALE_IN_ANIMATION_NAME].time = 0;
                 leaderboardAni.Play(SCALE_IN_ANIMATION_NAME);
             }
-            gameObjectNoData.SetActive(datas.Length == 0);
+            bool hasData = datas.Length != 0;
+            gameObjectNoData.SetActive(!hasData);
 
             leaderboardDatas = datas;
             scrollRect.totalCount = datas.Length;
             scrollRect.RefillCells();
-            scrollRect.ScrollToCellWithinTime(0, 0.5f);
-            //if (scrollIndex != 0)
+            if (hasData)
+            {
+                scrollRect.ScrollToCellWithinTime(0, 0.5f);
+            }
         });
     }
     // Implement your own Cache Pool here. The following is just for example.
@@ -272,7 +275,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
     // Start is called before the first frame update
     void Awake()
     {
-        Debug.Log("login uicontroller");
+        //Debug.Log("login uicontroller");
         instance = this;
         ani = GetComponent<Animation>();
         secretAni = gameObjectSecret.GetComponent<Animation>();
@@ -326,7 +329,7 @@ public class LoginUIController : MonoBehaviour, LoopScrollDataSource, LoopScroll
         leaderboardText = gameObjectLeaderboard.GetComponentInChildren<Text>();
         ELanguage e = GameManager.Instance.GetLanguage();
         UpdateLanguageButton(e);
-        UpdateRule(e);//TODO set default text to cn?
+        UpdateRule(e);
         UpdateCredit(e);
         UpdateSecret(e);
         leaderboardText.text = LEADERBOARD_TITLE_TEXT[(int)e];

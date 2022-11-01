@@ -6,14 +6,14 @@ public class LeaderboardController : MonoBehaviour
 {
     const int leaderboardID = 8158;
     const int MAX_RANKING_NUMBER = 100;
-
+    const string NAME_SAVE = "PlayerName";
     int memberId = 0;
     string playerName;
     LootLockerLeaderboardMember[] scores;
     // Start is called before the first frame update
     void Start()
     {
-        playerName = PlayerPrefs.GetString("PlayerName");
+        playerName = PlayerPrefs.GetString(NAME_SAVE);
     }
 
     public string GetPlayerName()
@@ -24,7 +24,7 @@ public class LeaderboardController : MonoBehaviour
     public void SetPlayerName(string name)
     {
         playerName = name;
-        PlayerPrefs.SetString("PlayerName", name);
+        PlayerPrefs.SetString(NAME_SAVE, name);
     }
     
     public void SubmitScore(int score, System.Action<LootLockerSubmitScoreResponse> callback)
@@ -47,7 +47,7 @@ public class LeaderboardController : MonoBehaviour
             StartCoroutine(StartSession(() => {
                 if (memberId == 0)
                 {
-                    Debug.LogError("network error?");
+                    //Debug.LogError("network error?");
                     return;
                 }
                 RequestGetScore(callback);
@@ -64,12 +64,12 @@ public class LeaderboardController : MonoBehaviour
             if (response.success)
             {
                 scores = response.items;
-                Debug.Log("ScoreList: " + response.items.Length);
+                //Debug.Log("ScoreList: " + response.items.Length);
             }
-            else
-            {
-                Debug.Log("failed: " + response.Error);
-            }
+            //else
+            //{
+            //    Debug.Log("failed: " + response.Error);
+            //}
             callback(scores);
         });
     }
@@ -81,11 +81,11 @@ public class LeaderboardController : MonoBehaviour
         {
             if (!response.success)
             {
-                Debug.Log("error starting LootLocker session");
+                //Debug.Log("error starting LootLocker session");
             }
             else
             {
-                Debug.Log("successfully started LootLocker session->" + response.player_id);
+                //Debug.Log("successfully started LootLocker session->" + response.player_id);
                 memberId = response.player_id;
             }
             done = true;

@@ -254,7 +254,7 @@ public class GameUIController : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("game ui controller");
+        //Debug.Log("game ui controller");
         instance = this;
 
         scoreImages = new Image[scoreRoot.transform.childCount];
@@ -342,7 +342,6 @@ public class GameUIController : MonoBehaviour
 
         if (isStartAddBar)
         {
-            //scoreBarImage.fillAmount += Time.deltaTime * fAddAmount(0~1;
             scoreBarImage.fillAmount += Time.deltaTime;
             if (scoreBarImage.fillAmount >= fAddAmount)
             {

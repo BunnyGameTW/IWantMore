@@ -34,8 +34,8 @@ public class GameManager : MonoBehaviour
     const float COMBO_BONUS = 2.0f;
     const int MAX_COMBO = 999;
     const int MAX_SCORE = 9999999;
-    const int MAX_ENEMY_COUNT = 300;//TODO
-    const int UNLOCK_SECRET_SCORE = 1000;
+    const int MAX_ENEMY_COUNT = 200;
+    const int UNLOCK_SECRET_SCORE = 3000;
     const int INITIAL_ENEMY_COUNT = 50;
     const int EXPAND_POOL_COUNT = 10;
     const int INITIAL_PARTICLE_COUNT = 30;
@@ -58,7 +58,7 @@ public class GameManager : MonoBehaviour
     Vector2 POOL_IDLE_POSITION = new Vector2(15, 0);
     int[] fatScoreArray = {
         150, 500, 1000, 3000, 5000, 
-        10000, 20000, 50000, 100000, 150000,
+        10000, 20000, 50000, 100000, 200000,
     };
     int[,] enemyKindArray = {
        {60, 10, 30},
@@ -72,7 +72,7 @@ public class GameManager : MonoBehaviour
        {20, 45, 35},
        {20, 40, 40},
        {30, 30, 40},
-       {30, 30, 40},
+       {40, 20, 40},
     };
 
     public Enemy[] enemies;
@@ -110,7 +110,7 @@ public class GameManager : MonoBehaviour
     #region life cycle
     void Awake()
     {
-        Debug.Log("game manager");
+        //Debug.Log("game manager");
         instance = this;        
 
         string data = PlayerPrefs.GetString(SAVE_NAME);
@@ -129,7 +129,7 @@ public class GameManager : MonoBehaviour
         else
             language = ELanguage.CN;
 
-        AnimationEventListener[] events = FindObjectsOfType<AnimationEventListener>();//TODO
+        AnimationEventListener[] events = FindObjectsOfType<AnimationEventListener>();
         for (int i = 0; i < events.Length; i++)
         {
             events[i].sender += AnimationEvent;
@@ -172,7 +172,12 @@ public class GameManager : MonoBehaviour
         return isMobile;
     }
    
-   
+    public bool CheckIsLastStage()
+    {
+        return difficulty == fatScoreArray.Length;
+    }
+
+
     public ELanguage GetLanguage()
     {
         return language;
@@ -185,29 +190,19 @@ public class GameManager : MonoBehaviour
             language = _language;
             PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, language.ToString());
         }
-    }
-    void MyDebug()
-    {
-        if (Input.GetKeyDown(KeyCode.S))
-            SpawnEnemy(1);
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            PlayerPrefs.SetString(SAVE_NAME, "");
-            leaderboardController.SetPlayerName("");
-        }
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            SetLanguage(ELanguage.CN);
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            SetLanguage(ELanguage.EN);
-        }
-    }
+    }   
 
     void Update()
     {
-        MyDebug();
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+
+            PlayerPrefs.SetString("PlayerName", "");
+            PlayerPrefs.SetString(SAVE_NAME, "");
+            PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, "");
+            PlayerPrefs.SetString(RULE_SAVE_NAME, "");
+        }
 
         //spawn enemy
         if (state == EGameState.GAME)
@@ -286,14 +281,14 @@ public class GameManager : MonoBehaviour
             particlePool.Capacity += EXPAND_POOL_COUNT;
             particleInUsePool.Capacity += EXPAND_POOL_COUNT;
 
-            go = Instantiate(dieParticle, POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);//TODO how to improve
-            go.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;//TODO
+            go = Instantiate(dieParticle, POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);
+            go.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;
             particleInUsePool.Add(go);
 
             for (int i = 1; i < EXPAND_POOL_COUNT; i++)
             {
                 GameObject e1 = Instantiate(dieParticle, POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);
-                e1.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;//TODO
+                e1.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;
                 particlePool.Add(e1);
             }
         }
@@ -325,7 +320,7 @@ public class GameManager : MonoBehaviour
             enemyPool[kind].Capacity += EXPAND_POOL_COUNT;
             enemyInUsePool[kind].Capacity += EXPAND_POOL_COUNT;
 
-            Enemy e = Instantiate(enemies[(int)kind - 1], POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);//TODO how to improve
+            Enemy e = Instantiate(enemies[(int)kind - 1], POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);
             enemyInUsePool[kind].Add(e);            
 
             for (int i = 1; i < EXPAND_POOL_COUNT; i++)
@@ -349,7 +344,7 @@ public class GameManager : MonoBehaviour
     {
         if (state == _state)
         {
-            Debug.LogError("this shouldn't happen");
+            //Debug.LogError("this shouldn't happen");
             return;
         }
 
@@ -515,7 +510,7 @@ public class GameManager : MonoBehaviour
         AudioManager.Instance.PlayHit();
         player.AddFeverTime();
         //check difficulty
-        if (difficulty != fatScoreArray.Length)//TODO reach max level add fixed score to trigger fever?
+        if (difficulty != fatScoreArray.Length)
         {
             int index = difficulty;
             for (int i = difficulty; i < fatScoreArray.Length; i++)
@@ -529,7 +524,7 @@ public class GameManager : MonoBehaviour
             {
                 int offset = index - difficulty;
                 difficulty = index;
-                if(difficulty == fatScoreArray.Length)
+                if(CheckIsLastStage())
                     GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index - 1]);
                 else
                     GameUIController.Instance.SetDifficultyScore(fatScoreArray[index - 1], fatScoreArray[index]);
@@ -539,14 +534,13 @@ public class GameManager : MonoBehaviour
                     spawnTime *= SPAWN_TIME_DECREASE_RATIO;
                     AudioManager.Instance.PlaySound(EAudioClipKind.LEVEL_UP);
                     player.SetFever();
-                    player.BecomeFatter();
 
                     for (int k = 0; k < enemies.Length; k++)
                     {
                         int count = enemyInUsePool[enemies[k].kind].Count;
                         for (int j = 0; j < count; j++)
                         {
-                            enemyInUsePool[enemies[k].kind][j].AddDifficulty();
+                            enemyInUsePool[enemies[k].kind][j].AddDifficulty(difficulty);
                         }
                     }
                 }
@@ -555,7 +549,7 @@ public class GameManager : MonoBehaviour
         GameUIController.Instance.SetScore(score);
     }
 
-    void AnimationEvent(GameObject go)//TODO
+    void AnimationEvent(GameObject go)
     {
         bool isInThere = particleInUsePool.Remove(go);
         
@@ -575,7 +569,7 @@ public class GameManager : MonoBehaviour
                 SetStateStart(nextState);
                 gameObjectRoots[state].SetActive(false);
                 gameObjectRoots[nextState].SetActive(true);
-                Debug.Log("active root->" + state + ", " + nextState);
+                //Debug.Log("active root->" + state + ", " + nextState);
 
                 transitionAni[TRANISITION_NAME].speed = -1;
                 transitionAni[TRANISITION_NAME].time = transitionAni[TRANISITION_NAME].length;
@@ -642,7 +636,7 @@ public class GameManager : MonoBehaviour
         for (int j = 0; j < INITIAL_PARTICLE_COUNT; j++)
         {
             GameObject e = Instantiate(dieParticle, POOL_IDLE_POSITION, Quaternion.identity, spawnRoot);
-            e.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;//TODO
+            e.GetComponent<AnimationEventListener>().senderGameObject += AnimationEvent;
             particlePool.Add(e);
         }
     }
@@ -671,7 +665,7 @@ public class GameManager : MonoBehaviour
             sum += enemyKindArray[_difficulty, i];
             if (randomValue < sum)
             {
-                return (EEnemyKind)i + 1;//TODO how to improve
+                return (EEnemyKind)i + 1;
             }
         }
         return EEnemyKind.NORMAL;

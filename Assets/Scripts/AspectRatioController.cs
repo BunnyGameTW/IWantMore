@@ -172,6 +172,7 @@ public class AspectRatioController : MonoBehaviour
             return;
         }
 
+#if UNITY_STANDALONE_WIN
         // Register callback for then application wants to quit.
         Application.wantsToQuit += ApplicationWantsToQuit;
 
@@ -204,6 +205,7 @@ public class AspectRatioController : MonoBehaviour
 
         // Initialization complete.
         started = true;
+#endif
     }
 
     /// <summary>
@@ -326,6 +328,7 @@ public class AspectRatioController : MonoBehaviour
     /// </summary>
     void Update()
     {
+#if UNITY_STANDALONE_WIN
         // Block switching to fullscreen if fullscreen is disallowed.
         if (!allowFullscreen && Screen.fullScreen)
         {
@@ -386,14 +389,15 @@ public class AspectRatioController : MonoBehaviour
         wasFullscreenLastFrame = Screen.fullScreen;
 
         // Trigger resolution changed event in the editor when the game window is resized.
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (Screen.width != setWidth || Screen.height != setHeight)
         {
             setWidth = Screen.width;
             setHeight = Screen.height;
             resolutionChangedEvent.Invoke(setWidth, setHeight, Screen.fullScreen);           
         }
-        #endif
+#endif
+#endif
     }
 
     /// <summary>
