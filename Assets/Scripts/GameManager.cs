@@ -102,11 +102,6 @@ public class GameManager : MonoBehaviour
     
     public bool isMovingStateForMobile { get; set; }
 
-#if !UNITY_EDITOR && UNITY_WEBGL
-    [System.Runtime.InteropServices.DllImport("__Internal")]
-    private static extern bool IsMobile();
-#endif
-
     #region life cycle
     void Awake()
     {
@@ -156,7 +151,7 @@ public class GameManager : MonoBehaviour
         leaderboardController = GetComponent<LeaderboardController>();
 
 #if !UNITY_EDITOR && UNITY_WEBGL
-        if (IsMobile())
+        if (CheckIfMobile())
         {            
             isMovingStateForMobile = false;
             GameUIController.Instance.ShowGameObjectChangeState();
@@ -165,11 +160,7 @@ public class GameManager : MonoBehaviour
     }
     public bool CheckIfMobile()
     {
-        bool isMobile = false;
-#if !UNITY_EDITOR && UNITY_WEBGL
-        isMobile = IsMobile();
-#endif
-        return isMobile;
+        return Application.isMobilePlatform;
     }
    
     public bool CheckIsLastStage()
@@ -195,14 +186,14 @@ public class GameManager : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.R))
-        {
+        //if (Input.GetKeyDown(KeyCode.R))
+        //{
 
-            PlayerPrefs.SetString("PlayerName", "");
-            PlayerPrefs.SetString(SAVE_NAME, "");
-            PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, "");
-            PlayerPrefs.SetString(RULE_SAVE_NAME, "");
-        }
+        //    PlayerPrefs.SetString("PlayerName", "");
+        //    PlayerPrefs.SetString(SAVE_NAME, "");
+        //    PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, "");
+        //    PlayerPrefs.SetString(RULE_SAVE_NAME, "");
+        //}
 
         //spawn enemy
         if (state == EGameState.GAME)
