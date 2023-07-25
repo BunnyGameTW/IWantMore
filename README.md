@@ -1,9 +1,9 @@
 # I Want More
-👉Introduction👈  
+【Introduction】  
 Wow! The cake looks yum yum, I wanna eat!  
 A fan game for celebrating Asa Ifrit's birthday!  
 
-✏️Dev log✏️  
+【Dev log】  
 https://bunnygame.tw/i-want-more/
 
 ![](imagePath)
