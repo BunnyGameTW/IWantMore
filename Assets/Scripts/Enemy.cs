@@ -63,7 +63,7 @@ public class Enemy : MonoBehaviour
         feedbacks = feedbackPlayer.FeedbacksList;
         for (int i = 0; i < feedbacks.Count; i++)
         {
-            feedbacks[i].Initialization(feedbackPlayer);
+            feedbacks[i].Initialization(feedbackPlayer, i);
         }
         Reset();      
     }
