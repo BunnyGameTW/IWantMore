@@ -1,9 +1,13 @@
+//#define DEBUG_MODE
+//#define TEST_MOBILE
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using LootLocker.Requests;
 using MoreMountains.Feedbacks;
+using UnityEngine.Device;
+
 public enum EGameState
 {
     TITLE = 1,
@@ -106,7 +110,7 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         //Debug.Log("game manager");
-        instance = this;        
+        instance = this;
 
         string data = PlayerPrefs.GetString(SAVE_NAME);
         if (data != "")
@@ -122,8 +126,16 @@ public class GameManager : MonoBehaviour
         if (data != "")
             language = data == (ELanguage.CN.ToString()) ? ELanguage.CN : ELanguage.EN;
         else
-            language = ELanguage.CN;
-
+        {
+            if (UnityEngine.Application.systemLanguage == SystemLanguage.Chinese || 
+            UnityEngine.Application.systemLanguage == SystemLanguage.ChineseSimplified ||
+            UnityEngine.Application.systemLanguage == SystemLanguage.ChineseTraditional)
+                language = ELanguage.CN;
+            else
+                language = ELanguage.EN;
+        }
+        
+        
         AnimationEventListener[] events = FindObjectsOfType<AnimationEventListener>();
         for (int i = 0; i < events.Length; i++)
         {
@@ -150,17 +162,21 @@ public class GameManager : MonoBehaviour
         SceneManager.sceneLoaded += OnSceneLoaded;
         leaderboardController = GetComponent<LeaderboardController>();
 
-#if !UNITY_EDITOR && UNITY_WEBGL
+#if !UNITY_EDITOR && UNITY_WEBGL || TEST_MOBILE || UNITY_ANDROID
         if (CheckIfMobile())
         {            
-            isMovingStateForMobile = false;
+            isMovingStateForMobile = false;//TODO APK
             GameUIController.Instance.ShowGameObjectChangeState();
         }
 #endif
     }
     public bool CheckIfMobile()
     {
-        return Application.isMobilePlatform;
+#if TEST_MOBILE
+        return true;
+#else
+        return UnityEngine.Application.isMobilePlatform;
+#endif
     }
    
     public bool CheckIsLastStage()
@@ -185,16 +201,15 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-
-        //if (Input.GetKeyDown(KeyCode.R))
-        //{
-
-        //    PlayerPrefs.SetString("PlayerName", "");
-        //    PlayerPrefs.SetString(SAVE_NAME, "");
-        //    PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, "");
-        //    PlayerPrefs.SetString(RULE_SAVE_NAME, "");
-        //}
-
+#if DEBUG_MODE
+        if (Input.GetKeyDown(KeyCode.R))
+        {            
+            PlayerPrefs.SetString("PlayerName", "");
+            PlayerPrefs.SetString(SAVE_NAME, "");
+            PlayerPrefs.SetString(LANGUAGE_SAVE_NAME, "");
+            PlayerPrefs.SetString(RULE_SAVE_NAME, "");
+        }
+#endif
         //spawn enemy
         if (state == EGameState.GAME)
         {

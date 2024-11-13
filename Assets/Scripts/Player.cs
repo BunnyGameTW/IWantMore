@@ -1,3 +1,4 @@
+//#define TEST_MOBILE
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -139,7 +140,7 @@ public class Player : MonoBehaviour
         if (state == EPlayerState.STOP)
             return;
 
-#if !UNITY_EDITOR && UNITY_WEBGL
+#if !UNITY_EDITOR && UNITY_WEBGL || TEST_MOBILE
         bool isMoveState = true;
         if (GameManager.Instance.CheckIfMobile() && (!GameManager.Instance.isMovingStateForMobile || 
         GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition)))
@@ -223,9 +224,12 @@ public class Player : MonoBehaviour
             }
         }
 
-#if !UNITY_EDITOR && UNITY_WEBGL
-        if (GameManager.Instance.CheckIfMobile() && 
-        !GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition) || !GameManager.Instance.CheckIfMobile())
+#if !UNITY_EDITOR && UNITY_WEBGL || TEST_MOBILE
+        if ((GameManager.Instance.CheckIfMobile() && 
+        !GameUIController.Instance.CheckIsInChangeStateRect(Input.mousePosition) && 
+        Input.GetMouseButton(0)
+        ) || 
+        !GameManager.Instance.CheckIfMobile())
             UpdateView(direction, mousePosition);//hand rotation & length
 #else
         UpdateView(direction, mousePosition);//hand rotation & length
